@@ -71,14 +71,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>🏢 Residencial 250 - Itacorubi</h1>
+            <h1>🏢 Alto do Itacorubi</h1>
             <p class="subtitle">Apartamentos para Alugar em Florianópolis</p>
             <p class="location"><i class="fas fa-map-marker-alt"></i> Servidão Joaquim Soares, 250 - Itacorubi</p>
             
             <div class="contact-info">
                 <a href="tel:+5548999352627"><i class="fas fa-phone"></i> (48) 99935-2627</a>
                 <a href="https://wa.me/5548999352627"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                <a href="mailto:altodoitacorubi@gmail.com"><i class="fas fa-envelope"></i> Email</a>
+                <a href="mailto:altodoitacorubi@gmail.com">Email</a>
             </div>
         </header>
         
@@ -656,9 +656,6 @@
                         <p class="price-detail">+ IPTU</p>
                     </div>
                     <a href="https://docs.google.com/forms/d/e/1FAIpQLSe5MCN3g-EAgep88ovBmDUa14JrNhetjzGcq6EoaYy-W33_0w/viewform" class="rent-button" target="_blank"><i class="fas fa-home"></i> QUERO ALUGAR</a>
-                </div>
-            </div>
-
             <!-- APARTAMENTO 205 -->
             <div class="apartment-card alugado">
                 <div class="apartment-gallery" data-gallery="13">
@@ -736,17 +733,17 @@
                 <p>Servidão Joaquim Soares, nº 250<br>Bairro Itacorubi - Florianópolis/SC</p>
                 <p style="margin-top: 20px;"><strong>📞 Contato</strong></p>
                 <p>Telefone/WhatsApp: (48) 99935-2627</p>
-                <p>Email: <a href="mailto:altodoitacorubi@gmail.com" style="color: white;">altodoitacorubi@gmail.com</a></p>
+                <p>Email: altodoitacorubi@gmail.com</p>
                 <div class="social-links">
                     <a href="https://wa.me/5548999352627" target="_blank"><i class="fab fa-whatsapp"></i></a>
-                    <a href="mailto:altodoitacorubi@gmail.com"><i class="fas fa-envelope"></i></a>
+                    <a href="mailto:altodoitacorubi@gmail.com">📧</a>
                 </div>
                 <p style="margin-top: 30px; font-size: 12px; opacity: 0.7;">© 2025 Base 250 - Todos os direitos reservados</p>
             </div>
         </footer>
     </div>
     
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         let currentPositions = [0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         function changeImage(galleryIndex, direction) {
             const gallery = document.querySelectorAll('.apartment-gallery')[galleryIndex];
@@ -767,4 +764,37 @@
             const images = gallery.querySelector('.gallery-images');
             const indicators = gallery.querySelectorAll('.indicator');
             const counter = gallery.querySelector('.current');
-            currentPositions[galleryIndex
+            currentPositions[galleryIndex] = imageIndex;
+            const offset = -imageIndex * 100;
+            images.style.transform = `translateX(${offset}%)`;
+            indicators.forEach((ind, index) => {ind.classList.toggle('active', index === imageIndex);});
+            counter.textContent = imageIndex + 1;
+        }
+    
+        
+        // 🚀 AUTO-ORDENAÇÃO: Apartamentos disponíveis aparecem primeiro
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.querySelector('.apartments-grid');
+            if (!grid) return;
+            
+            // Pegar todos os cards de apartamentos
+            const cards = Array.from(grid.querySelectorAll('.apartment-card'));
+            
+            // Separar disponíveis e alugados
+            const disponiveis = cards.filter(card => !card.classList.contains('alugado'));
+            const alugados = cards.filter(card => card.classList.contains('alugado'));
+            
+            // Limpar a grid
+            grid.innerHTML = '';
+            
+            // Adicionar disponíveis primeiro
+            disponiveis.forEach(card => grid.appendChild(card));
+            
+            // Depois adicionar alugados
+            alugados.forEach(card => grid.appendChild(card));
+            
+            console.log(`✅ Apartamentos reorganizados: ${disponiveis.length} disponíveis, ${alugados.length} alugados`);
+        });
+    </script>
+</body>
+</html>
