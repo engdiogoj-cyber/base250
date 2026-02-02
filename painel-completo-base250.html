@@ -1,30 +1,817 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Completo Base 250</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BASE250 - Painel Integrado com Sheets</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --cor-primaria: #1565c0;
+      --cor-secundaria: #2e7d32;
+      --cor-alerta: #f57c00;
+      --cor-perigo: #d32f2f;
+      --cor-sucesso: #388e3c;
+      --cor-fundo: #eceff1;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--cor-fundo);
+      color: #263238;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, var(--cor-primaria) 0%, #0d47a1 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      border-bottom: 2px solid #ddd;
+    }
+    
+    .tab {
+      padding: 12px 20px;
+      background: #f5f5f5;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px 4px 0 0;
+      transition: all 0.2s;
+      color: #666;
+    }
+    
+    .tab:hover {
+      background: #e0e0e0;
+    }
+    
+    .tab.ativo {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .conteudo-tab {
+      display: none;
+    }
+    
+    .conteudo-tab.ativo {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      border-left: 4px solid var(--cor-primaria);
+    }
+    
+    .card-titulo {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cor-primaria);
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--cor-fundo);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .form-grupo {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-grupo.span-2 { grid-column: span 2; }
+    .form-grupo.span-3 { grid-column: span 3; }
+    
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      letter-spacing: 0.3px;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+    }
+    
+    .btn-grupo {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primario {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .btn-primario:hover:not(:disabled) {
+      background: #0d47a1;
+      box-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
+    }
+    
+    .btn-sucesso {
+      background: var(--cor-sucesso);
+      color: white;
+    }
+    
+    .btn-sucesso:hover:not(:disabled) {
+      background: #2e7d32;
+    }
+    
+    .btn-perigo {
+      background: var(--cor-perigo);
+      color: white;
+    }
+    
+    .btn-perigo:hover:not(:disabled) {
+      background: #b71c1c;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .info-box {
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 12px;
+      border-left: 4px solid;
+    }
+    
+    .info-box.sucesso {
+      background: #f1f8e9;
+      border-left-color: var(--cor-sucesso);
+      color: #2e7d32;
+    }
+    
+    .info-box.erro {
+      background: #ffebee;
+      border-left-color: var(--cor-perigo);
+      color: #d32f2f;
+    }
+    
+    .info-box.alerta {
+      background: #fff3e0;
+      border-left-color: var(--cor-alerta);
+      color: #e65100;
+    }
+    
+    .info-box.info {
+      background: #e3f2fd;
+      border-left-color: var(--cor-primaria);
+      color: #1565c0;
+    }
+    
+    .info-box.carregando {
+      background: #e8eaf6;
+      border-left-color: #3f51b5;
+      color: #3f51b5;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-top: 2px solid #3f51b5;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .tabela {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 15px;
+    }
+    
+    .tabela thead {
+      background: var(--cor-fundo);
+      border-bottom: 2px solid #ddd;
+    }
+    
+    .tabela th {
+      padding: 10px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--cor-primaria);
+    }
+    
+    .tabela td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .tabela tbody tr:hover {
+      background: var(--cor-fundo);
+    }
+    
+    .whatsapp-box {
+      background: #f5f5f5;
+      border-left: 4px solid #25d366;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-top: 15px;
+    }
+    
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-grupo.span-2,
+      .form-grupo.span-3 {
+        grid-column: span 1;
+      }
+      
+      .btn-grupo {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body>
-    <h1>Painel Completo Base 250</h1>
-    <h2>Funcionalidades</h2>
-    <p>Integração de Email, WhatsApp e Recursos de Rescisão de Contrato.</p>
-
-    <h3>Integração de Email</h3>
-    <form id="emailForm">
-        <label for="email">Endereço de Email:</label>
-        <input type="email" id="email" required>
-        <button type="submit">Enviar Email</button>
-    </form>
-
-    <h3>Integração WhatsApp</h3>
-    <a href="https://wa.me/?text=Olá!">Enviar Mensagem pelo WhatsApp</a>
-
-    <h3>Rescisão de Contrato</h3>
-    <form id="contractTerminationForm">
-        <label for="contractId">ID do Contrato:</label>
-        <input type="text" id="contractId" required>
-        <button type="submit">Rescindir Contrato</button>
-    </form>
+  <div class="container">
+    
+    <!-- HEADER -->
+    <div class="header">
+      <h1>🚀 BASE250 - Painel Integrado com Google Sheets</h1>
+      <p>Etapas + E-mails + WhatsApp + Encerramento (Conectado à Planilha)</p>
+    </div>
+    
+    <!-- ABAS -->
+    <div class="tabs">
+      <button class="tab ativo" onclick="mudarAba('fluxo')">📊 Fluxo Etapas</button>
+      <button class="tab" onclick="mudarAba('buscar')">🔍 Buscar Apto</button>
+      <button class="tab" onclick="mudarAba('emails')">📧 E-mails</button>
+      <button class="tab" onclick="mudarAba('whatsapp')">📲 WhatsApp</button>
+      <button class="tab" onclick="mudarAba('encerramento')">🔚 Encerramento</button>
+    </div>
+    
+    <!-- ========== ABA 1: FLUXO ETAPAS ========== -->
+    <div id="aba-fluxo" class="conteudo-tab ativo">
+      <div class="card">
+        <div class="card-titulo">📊 Fluxo Completo (5 Etapas Sequenciais)</div>
+        
+        <div class="info-box info">
+          ✓ Integrado com Sheets | ✓ Google Forms | ✓ Google Drive
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label class="form-label">Apartamento</label>
+            <input type="text" id="apto-fluxo" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label">Linha Forms</label>
+            <input type="number" id="linha-fluxo" class="form-input" placeholder="Ex: 2" min="2">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label">Tipo</label>
+            <select id="tipo-fluxo" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="novo">Novo Inquilino</option>
+              <option value="revisao">Revisão</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-primario" onclick="executarFluxoCompleto()">
+            ▶ Iniciar Fluxo (5 Etapas)
+          </button>
+        </div>
+        
+        <div id="resultado-fluxo" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+    <!-- ========== ABA 2: BUSCAR APARTAMENTO ========== -->
+    <div id="aba-buscar" class="conteudo-tab">
+      <div class="card">
+        <div class="card-titulo">🔍 Buscar Dados do Apartamento na Planilha</div>
+        
+        <div class="info-box info">
+          Busca em tempo real na aba "Contratos" do Google Sheets
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo span-2">
+            <label class="form-label">Número do Apartamento</label>
+            <input type="text" id="apto-buscar" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-primario" onclick="buscarApartamento()">
+            🔍 Buscar na Planilha
+          </button>
+        </div>
+        
+        <div id="resultado-buscar" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+    <!-- ========== ABA 3: E-MAILS ========== -->
+    <div id="aba-emails" class="conteudo-tab">
+      <div class="card">
+        <div class="card-titulo">📧 Enviar E-mails (Integrado com Sheets)</div>
+        
+        <div class="info-box info">
+          E-mails com dados reais da planilha + PDF em anexo
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label class="form-label">Tipo de E-mail</label>
+            <select id="tipo-email" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="1">📄 Contrato p/ Assinatura</option>
+              <option value="2">✅ Confirmação Assinado</option>
+              <option value="3">🏢 Boas-vindas</option>
+              <option value="4">📄 Contrato Final</option>
+              <option value="5">🧾 Declaração</option>
+            </select>
+          </div>
+          
+          <div class="form-grupo">
+            <label class="form-label">Apartamento</label>
+            <input type="text" id="apto-email" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+          
+          <div class="form-grupo">
+            <label class="form-label">E-mail (auto-preenchido)</label>
+            <input type="email" id="email-destinatario" class="form-input" placeholder="auto..." readonly>
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-primario" onclick="buscarEmailTemplate()">
+            👁 Visualizar Template
+          </button>
+          <button class="btn btn-sucesso" onclick="enviarEmailIntegrado()">
+            ✉️ Enviar E-mail
+          </button>
+        </div>
+        
+        <div id="preview-email" style="margin-top: 20px;"></div>
+        <div id="resultado-email" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+    <!-- ========== ABA 4: WHATSAPP ========== -->
+    <div id="aba-whatsapp" class="conteudo-tab">
+      <div class="card">
+        <div class="card-titulo">📲 Mensagens WhatsApp (Com dados do Sheets)</div>
+        
+        <div class="info-box info">
+          Mensagens personalizadas com dados reais da planilha
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label class="form-label">Tipo de Mensagem</label>
+            <select id="tipo-whats" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="contrato">📄 Contrato Enviado</option>
+              <option value="assinado">✅ Contrato Assinado</option>
+              <option value="boasvindas">🏢 Boas-vindas</option>
+              <option value="declaracao">🧾 Declaração</option>
+            </select>
+          </div>
+          
+          <div class="form-grupo span-2">
+            <label class="form-label">Apartamento</label>
+            <input type="text" id="apto-whats" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-primario" onclick="gerarMensagemWhatsApp()">
+            📲 Gerar Mensagem
+          </button>
+        </div>
+        
+        <div id="resultado-whatsapp" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+    <!-- ========== ABA 5: ENCERRAMENTO ========== -->
+    <div id="aba-encerramento" class="conteudo-tab">
+      <div class="card">
+        <div class="card-titulo">🔚 Encerrar Contrato (Atualiza Sheets)</div>
+        
+        <div class="info-box alerta">
+          ⚠️ Move dados para "Saídas" e limpa "Contratos". Ação registrada na Auditoria.
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo span-2">
+            <label class="form-label">Apartamento</label>
+            <input type="text" id="apto-encerramento" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+          
+          <div class="form-grupo">
+            <label class="form-label">Data de Saída</label>
+            <input type="text" id="data-saida" class="form-input" placeholder="dd/MM/yyyy">
+          </div>
+          
+          <div class="form-grupo span-3">
+            <label class="form-label">Observação</label>
+            <textarea id="obs-encerramento" class="form-textarea" style="height: 80px;" placeholder="Ex: Sem pendências"></textarea>
+          </div>
+        </div>
+        
+        <div id="resumo-encerramento" style="margin-bottom: 20px;"></div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-perigo" onclick="confirmarEncerramento()">
+            🔚 Encerrar Contrato
+          </button>
+        </div>
+        
+        <div id="resultado-encerramento" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script>
+    function mudarAba(nomeAba) {
+      document.querySelectorAll('.conteudo-tab').forEach(tab => {
+        tab.classList.remove('ativo');
+      });
+      document.getElementById(`aba-${nomeAba}`).classList.add('ativo');
+      
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.classList.remove('ativo');
+      });
+      event.target.classList.add('ativo');
+    }
+    
+    function executarFluxoCompleto() {
+      const apto = document.getElementById('apto-fluxo').value;
+      const linha = document.getElementById('linha-fluxo').value;
+      const tipo = document.getElementById('tipo-fluxo').value;
+      
+      if (!apto || !linha || !tipo) {
+        mostrarResultado('resultado-fluxo', 'Preencha todos os campos!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-fluxo', 
+        `<div class="spinner"></div> Iniciando fluxo (5 etapas)...`, 
+        'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            mostrarResultado('resultado-fluxo', 
+              `✅ FLUXO CONCLUÍDO!\n\n` +
+              `📊 Etapa 1: Importação ✓\n` +
+              `✅ Etapa 2: Validação ✓\n` +
+              `💾 Etapa 3: Salvamento ✓\n` +
+              `⚙️ Etapa 4: Processamento ✓\n` +
+              `🔄 Etapa 5: Sincronização ✓\n\n` +
+              `Mensagem: ${resultado.mensagem}`, 
+              'sucesso');
+          } else {
+            mostrarResultado('resultado-fluxo', `❌ ${resultado.mensagem}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-fluxo', `❌ Erro: ${erro}`, 'erro');
+        })
+        .executarFluxoCompleto(apto, linha, tipo);
+    }
+    
+    function buscarApartamento() {
+      const apto = document.getElementById('apto-buscar').value;
+      
+      if (!apto) {
+        mostrarResultado('resultado-buscar', 'Digite o número do apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-buscar', 
+        `<div class="spinner"></div> Buscando na planilha...`, 
+        'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado) {
+            let html = `
+              <div class="info-box sucesso">
+                ✅ Apartamento encontrado!
+              </div>
+              <table class="tabela">
+                <tr><td><strong>Apto</strong></td><td>${resultado.apto}</td></tr>
+                <tr><td><strong>Inquilino</strong></td><td>${resultado.inquilino || '-'}</td></tr>
+                <tr><td><strong>Valor</strong></td><td>R$ ${resultado.valor || '-'}</td></tr>
+                <tr><td><strong>Data Entrada</strong></td><td>${resultado.dataEntrada || '-'}</td></tr>
+                <tr><td><strong>Email</strong></td><td>${resultado.email || '-'}</td></tr>
+                <tr><td><strong>Telefone</strong></td><td>${resultado.telefone || '-'}</td></tr>
+                <tr><td><strong>Status</strong></td><td>${resultado.status || '-'}</td></tr>
+                <tr><td><strong>Pasta Drive</strong></td><td>${resultado.linkPasta ? '✓ Vinculada' : '✗ Sem pasta'}</td></tr>
+              </table>
+            `;
+            document.getElementById('resultado-buscar').innerHTML = html;
+          } else {
+            mostrarResultado('resultado-buscar', 'Apartamento não encontrado na planilha!', 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-buscar', `❌ Erro: ${erro}`, 'erro');
+        })
+        .buscarApartamento(apto);
+    }
+    
+    function buscarEmailTemplate() {
+      const tipo = document.getElementById('tipo-email').value;
+      const apto = document.getElementById('apto-email').value;
+      
+      if (!tipo || !apto) {
+        mostrarResultado('preview-email', 'Selecione tipo e apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('preview-email', 
+        `<div class="spinner"></div> Carregando template...`, 
+        'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.email) {
+            document.getElementById('email-destinatario').value = resultado.email;
+          }
+          
+          let html = `
+            <div class="info-box info">
+              <strong>${resultado.titulo}</strong><br><br>
+              <strong>📧 Para:</strong> ${resultado.email || '(não encontrado)'}<br>
+              <strong>📌 Assunto:</strong> ${resultado.assunto}<br><br>
+              <strong>📄 Corpo (primeiras linhas):</strong><br>
+              ${resultado.corpo.substring(0, 200)}...
+            </div>
+          `;
+          document.getElementById('preview-email').innerHTML = html;
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('preview-email', `❌ Erro: ${erro}`, 'erro');
+        })
+        .obterEmailTemplate(tipo, apto);
+    }
+    
+    function enviarEmailIntegrado() {
+      const tipo = document.getElementById('tipo-email').value;
+      const apto = document.getElementById('apto-email').value;
+      
+      if (!tipo || !apto) {
+        mostrarResultado('resultado-email', 'Selecione tipo e apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-email', 
+        `<div class="spinner"></div> Enviando e-mail...`, 
+        'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            mostrarResultado('resultado-email', 
+              `✅ E-mail enviado com sucesso!\n\n` +
+              `📧 Para: ${resultado.email}\n` +
+              `📌 Apto: ${apto}\n` +
+              `💬 Tipo: ${resultado.tipo}`, 
+              'sucesso');
+          } else {
+            mostrarResultado('resultado-email', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-email', `❌ Erro: ${erro}`, 'erro');
+        })
+        .enviarEmailIntegrado(tipo, apto);
+    }
+    
+    function gerarMensagemWhatsApp() {
+      const tipo = document.getElementById('tipo-whats').value;
+      const apto = document.getElementById('apto-whats').value;
+      
+      if (!tipo || !apto) {
+        mostrarResultado('resultado-whatsapp', 'Selecione tipo e apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-whatsapp', 
+        `<div class="spinner"></div> Gerando mensagem...`, 
+        'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            const mensagem = resultado.mensagem;
+            let html = `
+              <div class="whatsapp-box">${mensagem}</div>
+              <div class="btn-grupo">
+                <button class="btn btn-primario" onclick="copiarWhatsApp(\`${mensagem.replace(/`/g, '\\`')}\`)">
+                  📋 Copiar
+                </button>
+                <button class="btn btn-sucesso" onclick="window.open('https://wa.me/?text=' + encodeURIComponent(\`${mensagem.replace(/`/g, '\\`')}\`), '_blank')">
+                  📲 Abrir WhatsApp
+                </button>
+              </div>
+            `;
+            document.getElementById('resultado-whatsapp').innerHTML = html;
+          } else {
+            mostrarResultado('resultado-whatsapp', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-whatsapp', `❌ Erro: ${erro}`, 'erro');
+        })
+        .gerarMensagemWhatsApp(tipo, apto);
+    }
+    
+    function copiarWhatsApp(texto) {
+      navigator.clipboard.writeText(texto).then(() => {
+        alert('✅ Mensagem copiada para a área de transferência!');
+      });
+    }
+    
+    function confirmarEncerramento() {
+      const apto = document.getElementById('apto-encerramento').value;
+      const data = document.getElementById('data-saida').value;
+      const obs = document.getElementById('obs-encerramento').value;
+      
+      if (!apto || !data) {
+        mostrarResultado('resultado-encerramento', 'Preencha Apartamento e Data!', 'erro');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            const html = `
+              <div class="info-box alerta">
+                <strong>⚠️ CONFIRMAÇÃO</strong><br><br>
+                <strong>Apartamento:</strong> ${apto}<br>
+                <strong>Inquilino:</strong> ${resultado.inquilino}<br>
+                <strong>Data Saída:</strong> ${data}<br>
+                <br>
+                <strong>Ações:</strong><br>
+                ✓ Copiar para aba "Saídas"<br>
+                ✓ Limpar aba "Contratos"<br>
+                ✓ Registrar Auditoria<br>
+                ✓ Manter pasta no Drive
+              </div>
+              <div class="btn-grupo">
+                <button class="btn btn-perigo" onclick="executarEncerramento()">
+                  ✓ Confirmar
+                </button>
+              </div>
+            `;
+            document.getElementById('resumo-encerramento').innerHTML = html;
+          } else {
+            mostrarResultado('resultado-encerramento', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-encerramento', `❌ Erro: ${erro}`, 'erro');
+        })
+        .verificarEncerramento(apto);
+    }
+    
+    function executarEncerramento() {
+      const apto = document.getElementById('apto-encerramento').value;
+      const data = document.getElementById('data-saida').value;
+      const obs = document.getElementById('obs-encerramento').value;
+      
+      mostrarResultado('resultado-encerramento', 
+        `<div class="spinner"></div> Encerrando contrato...`, 
+        'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            mostrarResultado('resultado-encerramento', 
+              `✅ CONTRATO ENCERRADO!\n\n` +
+              `🏢 Apto: ${apto}\n` +
+              `📅 Data Saída: ${data}\n` +
+              `📊 Status: Disponível\n\n` +
+              `✓ Dados em "Saídas"\n` +
+              `✓ Registrado na Auditoria`, 
+              'sucesso');
+              
+            document.getElementById('resumo-encerramento').innerHTML = '';
+            document.getElementById('apto-encerramento').value = '';
+            document.getElementById('data-saida').value = '';
+            document.getElementById('obs-encerramento').value = '';
+          } else {
+            mostrarResultado('resultado-encerramento', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-encerramento', `❌ Erro: ${erro}`, 'erro');
+        })
+        .encerrarContratoIntegrado(apto, data, obs);
+    }
+    
+    function mostrarResultado(elementId, mensagem, tipo) {
+      document.getElementById(elementId).innerHTML = 
+        `<div class="info-box ${tipo}">${mensagem.replace(/\n/g, '<br>')}</div>`;
+    }
+  </script>
 </body>
 </html>
