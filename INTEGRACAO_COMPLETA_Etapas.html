@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BASE250 - Fluxo Completo de Etapas</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --cor-primaria: #1565c0;
+      --cor-secundaria: #2e7d32;
+      --cor-alerta: #f57c00;
+      --cor-perigo: #d32f2f;
+      --cor-sucesso: #388e3c;
+      --cor-fundo: #eceff1;
+      --cor-ativa: #64b5f6;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--cor-fundo);
+      color: #263238;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* ========== HEADER ========== */
+    .header {
+      background: linear-gradient(135deg, var(--cor-primaria) 0%, #0d47a1 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .header h1 {
+      font-size: 26px;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    /* ========== FLUXO DE ETAPAS ========== */
+    .fluxo-etapas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .etapa {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 3px solid #ddd;
+    }
+    
+    .etapa:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transform: translateY(-4px);
+    }
+    
+    .etapa.ativa {
+      border-color: var(--cor-primaria);
+      background: #e3f2fd;
+    }
+    
+    .etapa.concluida {
+      border-color: var(--cor-sucesso);
+      background: #f1f8e9;
+    }
+    
+    .etapa-numero {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      background: var(--cor-primaria);
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 36px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    
+    .etapa.concluida .etapa-numero {
+      background: var(--cor-sucesso);
+    }
+    
+    .etapa-titulo {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cor-primaria);
+      margin-bottom: 8px;
+    }
+    
+    .etapa-descricao {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    
+    .etapa-status {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      font-weight: 600;
+    }
+    
+    .etapa-status.pendente {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .etapa-status.ativa {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+    
+    .etapa-status.concluida {
+      background: #f1f8e9;
+      color: #2e7d32;
+    }
+    
+    .etapa-icone {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      opacity: 0.3;
+    }
+    
+    .etapa.concluida .etapa-icone {
+      opacity: 1;
+    }
+    
+    /* ========== SETAS ENTRE ETAPAS ========== */
+    .fluxo-seta {
+      display: none;
+      text-align: center;
+      color: var(--cor-primaria);
+      font-size: 20px;
+      margin: 20px 0;
+    }
+    
+    @media (max-width: 900px) {
+      .fluxo-seta {
+        display: block;
+      }
+    }
+    
+    /* ========== CONTEÚDO ETAPA ========== */
+    .conteudo-etapas {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    
+    .etapa-conteudo {
+      display: none;
+    }
+    
+    .etapa-conteudo.ativa {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .etapa-conteudo h3 {
+      color: var(--cor-primaria);
+      font-size: 18px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--cor-fundo);
+    }
+    
+    /* ========== FORMULÁRIOS ========== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .form-grupo {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-grupo.span-2 {
+      grid-column: span 2;
+    }
+    
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      letter-spacing: 0.3px;
+    }
+    
+    .form-input,
+    .form-select {
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 13px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .form-input:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+    }
+    
+    /* ========== BOTÕES ========== */
+    .btn-grupo {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primario {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .btn-primario:hover:not(:disabled) {
+      background: #0d47a1;
+      box-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
+    }
+    
+    .btn-sucesso {
+      background: var(--cor-sucesso);
+      color: white;
+    }
+    
+    .btn-sucesso:hover:not(:disabled) {
+      background: #2e7d32;
+    }
+    
+    .btn-alerta {
+      background: var(--cor-alerta);
+      color: white;
+    }
+    
+    .btn-alerta:hover:not(:disabled) {
+      background: #e65100;
+    }
+    
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #666;
+      border: 1px solid #ddd;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background: #eeeeee;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* ========== INFORMAÇÕES ========== */
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid var(--cor-primaria);
+      padding: 12px 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 12px;
+    }
+    
+    .info-box.sucesso {
+      background: #f1f8e9;
+      border-left-color: var(--cor-sucesso);
+    }
+    
+    .info-box.alerta {
+      background: #fff3e0;
+      border-left-color: var(--cor-alerta);
+    }
+    
+    /* ========== STATUS DE SINCRONIZAÇÃO ========== */
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 15px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 15px;
+    }
+    
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #999;
+    }
+    
+    .sync-dot.online {
+      background: var(--cor-sucesso);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* ========== TABELA ========== */
+    .tabela {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 15px;
+    }
+    
+    .tabela thead {
+      background: var(--cor-fundo);
+      border-bottom: 2px solid #ddd;
+    }
+    
+    .tabela th {
+      padding: 10px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--cor-primaria);
+    }
+    
+    .tabela td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .tabela tbody tr:hover {
+      background: var(--cor-fundo);
+    }
+    
+    /* ========== RESUMO ========== */
+    .resumo-dados {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 15px;
+    }
+    
+    .resumo-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+      font-size: 12px;
+    }
+    
+    .resumo-item:last-child {
+      border-bottom: none;
+    }
+    
+    .resumo-label {
+      font-weight: 600;
+      color: #666;
+    }
+    
+    .resumo-valor {
+      color: var(--cor-primaria);
+      font-weight: 600;
+    }
+    
+    /* ========== REPOSITÓRIO GITHUB ========== */
+    .github-info {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 15px;
+      font-size: 11px;
+    }
+    
+    .github-info a {
+      color: var(--cor-primaria);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .github-info a:hover {
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-grupo.span-2 {
+        grid-column: span 1;
+      }
+      
+      .fluxo-etapas {
+        grid-template-columns: 1fr;
+      }
+      
+      .btn-grupo {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- HEADER -->
+    <div class="header">
+      <h1>🚀 BASE250 - Fluxo Completo de Etapas</h1>
+      <p>Integração HTML + Google Apps Script + GitHub</p>
+    </div>
+    
+    <!-- STATUS DE SINCRONIZAÇÃO -->
+    <div class="sync-status">
+      <div class="sync-dot online"></div>
+      <span>Conectado ao Google Apps Script</span>
+      <span style="margin-left: auto; color: #2e7d32; font-weight: 600;">✓ Online</span>
+    </div>
+    
+    <!-- FLUXO DE ETAPAS -->
+    <div class="fluxo-etapas">
+      <!-- ETAPA 1: IMPORTAÇÃO -->
+      <div class="etapa ativa" onclick="trocarEtapa(1)">
+        <div class="etapa-icone">📥</div>
+        <div class="etapa-numero">1</div>
+        <div class="etapa-titulo">Importação</div>
+        <div class="etapa-descricao">Dados do Google Forms</div>
+        <span class="etapa-status ativa">Ativa</span>
+      </div>
+      
+      <div class="fluxo-seta">⬇</div>
+      
+      <!-- ETAPA 2: VALIDAÇÃO -->
+      <div class="etapa" onclick="trocarEtapa(2)">
+        <div class="etapa-icone">✅</div>
+        <div class="etapa-numero">2</div>
+        <div class="etapa-titulo">Validação</div>
+        <div class="etapa-descricao">Verificar dados</div>
+        <span class="etapa-status pendente">Pendente</span>
+      </div>
+      
+      <div class="fluxo-seta">⬇</div>
+      
+      <!-- ETAPA 3: SALVAMENTO -->
+      <div class="etapa" onclick="trocarEtapa(3)">
+        <div class="etapa-icone">💾</div>
+        <div class="etapa-numero">3</div>
+        <div class="etapa-titulo">Salvamento</div>
+        <div class="etapa-descricao">Salvar na planilha</div>
+        <span class="etapa-status pendente">Pendente</span>
+      </div>
+      
+      <div class="fluxo-seta">⬇</div>
+      
+      <!-- ETAPA 4: PROCESSAMENTO -->
+      <div class="etapa" onclick="trocarEtapa(4)">
+        <div class="etapa-icone">⚙️</div>
+        <div class="etapa-numero">4</div>
+        <div class="etapa-titulo">Processamento</div>
+        <div class="etapa-descricao">Gerar documentos</div>
+        <span class="etapa-status pendente">Pendente</span>
+      </div>
+      
+      <div class="fluxo-seta">⬇</div>
+      
+      <!-- ETAPA 5: SINCRONIZAÇÃO -->
+      <div class="etapa" onclick="trocarEtapa(5)">
+        <div class="etapa-icone">🔄</div>
+        <div class="etapa-numero">5</div>
+        <div class="etapa-titulo">Sincronização</div>
+        <div class="etapa-descricao">Enviar para GitHub</div>
+        <span class="etapa-status pendente">Pendente</span>
+      </div>
+    </div>
+    
+    <!-- CONTEÚDO DAS ETAPAS -->
+    <div class="conteudo-etapas">
+      
+      <!-- ETAPA 1: IMPORTAÇÃO -->
+      <div id="etapa-1" class="etapa-conteudo ativa">
+        <h3>📥 Etapa 1: Importação de Dados</h3>
+        
+        <div class="info-box">
+          Importe dados do Google Forms para a planilha. Os dados serão validados antes de prosseguir.
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo">
+            <label class="form-label">Apartamento *</label>
+            <input type="text" id="apto-etapa1" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+          
+          <div class="form-grupo">
+            <label class="form-label">Linha do Forms *</label>
+            <input type="number" id="linha-etapa1" class="form-input" placeholder="Ex: 2" min="2">
+          </div>
+          
+          <div class="form-grupo span-2">
+            <label class="form-label">Tipo de Operação *</label>
+            <select id="tipo-etapa1" class="form-select">
+              <option value="">Selecione...</option>
+              <option value="novo">Novo Inquilino</option>
+              <option value="revisao">Revisão</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-primario" onclick="executarEtapa(1)">
+            📥 Importar Dados
+          </button>
+          <button class="btn btn-secondary" onclick="limparEtapa(1)">
+            🔄 Limpar
+          </button>
+        </div>
+        
+        <div id="resultado-etapa1" style="margin-top: 20px;"></div>
+      </div>
+      
+      <!-- ETAPA 2: VALIDAÇÃO -->
+      <div id="etapa-2" class="etapa-conteudo">
+        <h3>✅ Etapa 2: Validação de Dados</h3>
+        
+        <div class="info-box">
+          Valide se todos os dados foram importados corretamente. Corrija qualquer erro antes de prosseguir.
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo span-2">
+            <label class="form-label">Número do Apartamento *</label>
+            <input type="text" id="apto-etapa2" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-primario" onclick="executarEtapa(2)">
+            ✅ Validar Dados
+          </button>
+          <button class="btn btn-secondary" onclick="voltarEtapa(1)">
+            ⬅ Voltar
+          </button>
+        </div>
+        
+        <div id="resultado-etapa2" style="margin-top: 20px;"></div>
+      </div>
+      
+      <!-- ETAPA 3: SALVAMENTO -->
+      <div id="etapa-3" class="etapa-conteudo">
+        <h3>💾 Etapa 3: Salvamento na Planilha</h3>
+        
+        <div class="info-box sucesso">
+          Salve os dados validados na planilha do Google Sheets. Isso criará registros permanentes.
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo span-2">
+            <label class="form-label">Número do Apartamento *</label>
+            <input type="text" id="apto-etapa3" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-sucesso" onclick="executarEtapa(3)">
+            💾 Salvar na Planilha
+          </button>
+          <button class="btn btn-secondary" onclick="voltarEtapa(2)">
+            ⬅ Voltar
+          </button>
+        </div>
+        
+        <div id="resultado-etapa3" style="margin-top: 20px;"></div>
+      </div>
+      
+      <!-- ETAPA 4: PROCESSAMENTO -->
+      <div id="etapa-4" class="etapa-conteudo">
+        <h3>⚙️ Etapa 4: Processamento e Geração de Documentos</h3>
+        
+        <div class="info-box alerta">
+          Gere contratos, declarações e outros documentos a partir dos dados salvos.
+        </div>
+        
+        <div class="form-grid">
+          <div class="form-grupo span-2">
+            <label class="form-label">Número do Apartamento *</label>
+            <input type="text" id="apto-etapa4" class="form-input" placeholder="Ex: 101" maxlength="3">
+          </div>
+          
+          <div class="form-grupo span-2">
+            <label class="form-label">Tipo de Documento</label>
+            <select id="tipo-doc" class="form-select">
+              <option value="contrato">📄 Contrato</option>
+              <option value="declaracao">🧾 Declaração</option>
+              <option value="ambos">📄🧾 Ambos</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-sucesso" onclick="executarEtapa(4)">
+            ⚙️ Gerar Documentos
+          </button>
+          <button class="btn btn-secondary" onclick="voltarEtapa(3)">
+            ⬅ Voltar
+          </button>
+        </div>
+        
+        <div id="resultado-etapa4" style="margin-top: 20px;"></div>
+      </div>
+      
+      <!-- ETAPA 5: SINCRONIZAÇÃO -->
+      <div id="etapa-5" class="etapa-conteudo">
+        <h3>🔄 Etapa 5: Sincronização com GitHub</h3>
+        
+        <div class="info-box sucesso">
+          Sincronize os dados com o repositório GitHub para controle de versão e backup.
+        </div>
+        
+        <div class="github-info">
+          <strong>📦 Repositório:</strong> <a href="https://github.com/engdiogoj-cyber/base250" target="_blank">engdiogoj-cyber/base250</a>
+          <br>
+          <strong>🔗 URL:</strong> https://github.com/engdiogoj-cyber/base250.git
+        </div>
+        
+        <div class="form-grid" style="margin-top: 15px;">
+          <div class="form-grupo span-2">
+            <label class="form-label">Mensagem de Commit</label>
+            <input type="text" id="msg-commit" class="form-input" placeholder="Ex: Atualização de dados do apartamento 101" value="">
+          </div>
+          
+          <div class="form-grupo span-2">
+            <label class="form-label">Descrição (opcional)</label>
+            <textarea id="desc-commit" class="form-input" style="height: 80px; resize: vertical;" placeholder="Detalhe as alterações realizadas"></textarea>
+          </div>
+        </div>
+        
+        <div class="btn-grupo">
+          <button class="btn btn-sucesso" onclick="executarEtapa(5)">
+            🔄 Sincronizar com GitHub
+          </button>
+          <button class="btn btn-secondary" onclick="voltarEtapa(4)">
+            ⬅ Voltar
+          </button>
+        </div>
+        
+        <div id="resultado-etapa5" style="margin-top: 20px;"></div>
+      </div>
+      
+    </div>
+    
+    <!-- RESUMO FINAL -->
+    <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+      <h3 style="color: var(--cor-primaria); margin-bottom: 15px;">📊 Resumo do Fluxo</h3>
+      
+      <div class="resumo-dados">
+        <div class="resumo-item">
+          <span class="resumo-label">Status Atual:</span>
+          <span class="resumo-valor" id="status-atual">Etapa 1 - Importação</span>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Etapas Concluídas:</span>
+          <span class="resumo-valor" id="etapas-concluidas">0/5</span>
+        </div>
+        <div class="resumo-item">
+          <span class="resumo-label">Progresso:</span>
+          <div style="width: 100%; background: #e0e0e0; border-radius: 4px; height: 20px; margin-top: 8px;">
+            <div id="barra-progresso" style="width: 20%; background: var(--cor-primaria); height: 100%; border-radius: 4px; transition: width 0.3s;"></div>
+          </div>
+        </div>
+        <div class="resumo-item" style="margin-top: 10px;">
+          <span class="resumo-label">Última Atualização:</span>
+          <span class="resumo-valor" id="ultima-atualizacao">-</span>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script>
+    // ========== ESTADO GLOBAL ==========
+    let estadoFluxo = {
+      etapaAtual: 1,
+      etapasConcluidas: [],
+      dados: {
+        apto: null,
+        inquilino: null,
+        valorAluguel: null,
+        dataEntrada: null,
+        linhaForms: null,
+        tipoOperacao: null
+      },
+      ultimaAtualizacao: new Date().toLocaleString('pt-BR')
+    };
+    
+    // ========== TROCAR ETAPA ==========
+    function trocarEtapa(numero) {
+      // Esconder todas as etapas
+      document.querySelectorAll('.etapa-conteudo').forEach(el => {
+        el.classList.remove('ativa');
+      });
+      
+      // Mostrar etapa selecionada
+      document.getElementById(`etapa-${numero}`).classList.add('ativa');
+      
+      // Atualizar classe ativa dos cards
+      document.querySelectorAll('.etapa').forEach(el => {
+        el.classList.remove('ativa');
+      });
+      document.querySelectorAll('.etapa')[numero - 1].classList.add('ativa');
+      
+      estadoFluxo.etapaAtual = numero;
+      atualizarStatusEtapa();
+    }
+    
+    // ========== EXECUTAR ETAPA ==========
+    function executarEtapa(numero) {
+      const etapaAtual = `etapa-${numero}`;
+      
+      switch(numero) {
+        case 1:
+          executarImportacao();
+          break;
+        case 2:
+          executarValidacao();
+          break;
+        case 3:
+          executarSalvamento();
+          break;
+        case 4:
+          executarProcessamento();
+          break;
+        case 5:
+          executarSincronizacao();
+          break;
+      }
+    }
+    
+    // ========== EXECUTAR IMPORTAÇÃO ==========
+    function executarImportacao() {
+      const apto = document.getElementById('apto-etapa1').value;
+      const linha = document.getElementById('linha-etapa1').value;
+      const tipo = document.getElementById('tipo-etapa1').value;
+      
+      if (!apto || !linha || !tipo) {
+        mostrarResultado('resultado-etapa1', 'Preencha todos os campos!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-etapa1', 'Importando dados...', 'carregando');
+      
+      // Chamada Google Apps Script
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          estadoFluxo.dados.apto = apto;
+          estadoFluxo.dados.linhaForms = linha;
+          estadoFluxo.dados.tipoOperacao = tipo;
+          estadoFluxo.etapasConcluidas.push(1);
+          
+          mostrarResultado('resultado-etapa1', 
+            `✅ Dados importados com sucesso!\n\n📋 Apartamento: ${apto}\n📥 Linha: ${linha}\n🔄 Tipo: ${tipo}`, 
+            'sucesso'
+          );
+          
+          // Auto avançar
+          setTimeout(() => {
+            trocarEtapa(2);
+          }, 2000);
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-etapa1', `❌ Erro: ${erro}`, 'erro');
+        })
+        .importarLinhaForms({
+          apto: apto,
+          linha: parseInt(linha),
+          tipo: tipo
+        });
+    }
+    
+    // ========== EXECUTAR VALIDAÇÃO ==========
+    function executarValidacao() {
+      const apto = document.getElementById('apto-etapa2').value || estadoFluxo.dados.apto;
+      
+      if (!apto) {
+        mostrarResultado('resultado-etapa2', 'Digite o número do apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-etapa2', 'Validando dados...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          estadoFluxo.etapasConcluidas.push(2);
+          
+          let mensagem = '✅ Validação Concluída!\n\n';
+          if (resultado.temErros) {
+            mensagem += '❌ Erros encontrados:\n' + resultado.erros.join('\n') + '\n\n';
+          }
+          if (resultado.temAvisos) {
+            mensagem += '⚠️ Avisos:\n' + resultado.avisos.join('\n');
+          }
+          if (!resultado.temErros && !resultado.temAvisos) {
+            mensagem += 'Todos os dados estão válidos!';
+          }
+          
+          mostrarResultado('resultado-etapa2', mensagem, resultado.temErros ? 'erro' : 'sucesso');
+          
+          if (!resultado.temErros) {
+            setTimeout(() => trocarEtapa(3), 2000);
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-etapa2', `❌ Erro: ${erro}`, 'erro');
+        })
+        .validarDados(apto);
+    }
+    
+    // ========== EXECUTAR SALVAMENTO ==========
+    function executarSalvamento() {
+      const apto = document.getElementById('apto-etapa3').value || estadoFluxo.dados.apto;
+      
+      if (!apto) {
+        mostrarResultado('resultado-etapa3', 'Digite o número do apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-etapa3', 'Salvando na planilha...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          estadoFluxo.etapasConcluidas.push(3);
+          estadoFluxo.ultimaAtualizacao = new Date().toLocaleString('pt-BR');
+          
+          mostrarResultado('resultado-etapa3', 
+            `✅ Dados salvos com sucesso!\n\n📊 Planilha: Contratos\n🏢 Apartamento: ${apto}\n💾 Status: Salvo`, 
+            'sucesso'
+          );
+          
+          setTimeout(() => trocarEtapa(4), 2000);
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-etapa3', `❌ Erro: ${erro}`, 'erro');
+        })
+        .salvarApartamento({
+          apto: apto,
+          inquilino: estadoFluxo.dados.inquilino,
+          valorAluguel: estadoFluxo.dados.valorAluguel,
+          dataEntrada: estadoFluxo.dados.dataEntrada
+        });
+    }
+    
+    // ========== EXECUTAR PROCESSAMENTO ==========
+    function executarProcessamento() {
+      const apto = document.getElementById('apto-etapa4').value || estadoFluxo.dados.apto;
+      const tipoDoc = document.getElementById('tipo-doc').value;
+      
+      if (!apto) {
+        mostrarResultado('resultado-etapa4', 'Digite o número do apartamento!', 'erro');
+        return;
+      }
+      
+      mostrarResultado('resultado-etapa4', `Gerando ${tipoDoc}...`, 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          estadoFluxo.etapasConcluidas.push(4);
+          
+          let mensagem = `✅ Documentos Gerados!\n\n`;
+          if (resultado.linkContrato) {
+            mensagem += `📄 Contrato: Gerado com sucesso\n`;
+          }
+          if (resultado.linkDeclaracao) {
+            mensagem += `🧾 Declaração: Gerada com sucesso\n`;
+          }
+          
+          mostrarResultado('resultado-etapa4', mensagem, 'sucesso');
+          
+          setTimeout(() => trocarEtapa(5), 2000);
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-etapa4', `❌ Erro: ${erro}`, 'erro');
+        })
+        .gerarContrato(apto);
+    }
+    
+    // ========== EXECUTAR SINCRONIZAÇÃO ==========
+    function executarSincronizacao() {
+      const mensagem = document.getElementById('msg-commit').value || `Atualização automática - ${new Date().toLocaleString('pt-BR')}`;
+      const descricao = document.getElementById('desc-commit').value || '';
+      
+      mostrarResultado('resultado-etapa5', 'Sincronizando com GitHub...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          estadoFluxo.etapasConcluidas.push(5);
+          estadoFluxo.ultimaAtualizacao = new Date().toLocaleString('pt-BR');
+          
+          mostrarResultado('resultado-etapa5', 
+            `✅ Sincronizado com GitHub!\n\n🔗 Repositório: engdiogoj-cyber/base250\n📦 Branch: main\n💬 Commit: "${mensagem}"\n✓ Status: Sincronizado`, 
+            'sucesso'
+          );
+          
+          // Marcar todas as etapas como concluídas
+          document.querySelectorAll('.etapa').forEach(el => {
+            el.classList.add('concluida');
+          });
+          
+          atualizarStatusEtapa();
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-etapa5', `❌ Erro: ${erro}`, 'erro');
+        })
+        .sincronizarGitHub({
+          mensagem: mensagem,
+          descricao: descricao,
+          dados: estadoFluxo.dados
+        });
+    }
+    
+    // ========== VOLTAR ETAPA ==========
+    function voltarEtapa(numero) {
+      trocarEtapa(numero);
+    }
+    
+    // ========== LIMPAR ETAPA ==========
+    function limparEtapa(numero) {
+      if (numero === 1) {
+        document.getElementById('apto-etapa1').value = '';
+        document.getElementById('linha-etapa1').value = '';
+        document.getElementById('tipo-etapa1').value = '';
+        document.getElementById('resultado-etapa1').innerHTML = '';
+      }
+    }
+    
+    // ========== MOSTRAR RESULTADO ==========
+    function mostrarResultado(elementId, texto, tipo) {
+      const elemento = document.getElementById(elementId);
+      const classe = tipo === 'sucesso' ? 'sucesso' : tipo === 'erro' ? 'alerta' : '';
+      elemento.innerHTML = `<div class="info-box ${classe}">${texto.replace(/\n/g, '<br>')}</div>`;
+    }
+    
+    // ========== ATUALIZAR STATUS ETAPA ==========
+    function atualizarStatusEtapa() {
+      const progresso = (estadoFluxo.etapasConcluidas.length / 5) * 100;
+      document.getElementById('barra-progresso').style.width = progresso + '%';
+      document.getElementById('etapas-concluidas').textContent = `${estadoFluxo.etapasConcluidas.length}/5`;
+      document.getElementById('status-atual').textContent = `Etapa ${estadoFluxo.etapaAtual}`;
+      document.getElementById('ultima-atualizacao').textContent = estadoFluxo.ultimaAtualizacao;
+    }
+  </script>
+</body>
+</html>
