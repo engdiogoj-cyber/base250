@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BASE250 - Painel Administrativo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --cor-primaria: #1565c0;
+      --cor-secundaria: #2e7d32;
+      --cor-alerta: #f57c00;
+      --cor-perigo: #d32f2f;
+      --cor-sucesso: #388e3c;
+      --cor-fundo: #f5f5f5;
+      --cor-sidebar: #263238;
+      --cor-card: #ffffff;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--cor-fundo);
+      color: #333;
+      display: flex;
+      min-height: 100vh;
+    }
+    
+    /* ========== SIDEBAR ========== */
+    .sidebar {
+      width: 260px;
+      background: var(--cor-sidebar);
+      color: white;
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      transition: transform 0.3s;
+      z-index: 1000;
+    }
+    
+    .sidebar.mobile-hidden {
+      transform: translateX(-100%);
+    }
+    
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .sidebar-header h1 {
+      font-size: 22px;
+      margin-bottom: 5px;
+    }
+    
+    .sidebar-header p {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    .sidebar-menu {
+      list-style: none;
+    }
+    
+    .sidebar-menu li {
+      margin: 5px 0;
+    }
+    
+    .sidebar-menu a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    
+    .sidebar-menu a:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    
+    .sidebar-menu a.active {
+      background: var(--cor-primaria);
+      color: white;
+      border-left: 4px solid #fff;
+    }
+    
+    .sidebar-menu a .icon {
+      margin-right: 12px;
+      font-size: 18px;
+    }
+    
+    /* ========== MAIN CONTENT ========== */
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 20px;
+      transition: margin-left 0.3s;
+    }
+    
+    .main-content.expanded {
+      margin-left: 0;
+    }
+    
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 1001;
+      background: var(--cor-primaria);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    
+    .top-bar {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .top-bar h2 {
+      font-size: 24px;
+      color: var(--cor-primaria);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: var(--cor-primaria);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    /* ========== CONTENT SECTIONS ========== */
+    .content-section {
+      display: none;
+    }
+    
+    .content-section.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ========== CARDS ========== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .metric-card {
+      background: var(--cor-card);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid var(--cor-primaria);
+      transition: transform 0.2s;
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .metric-card.success {
+      border-left-color: var(--cor-sucesso);
+    }
+    
+    .metric-card.warning {
+      border-left-color: var(--cor-alerta);
+    }
+    
+    .metric-card.danger {
+      border-left-color: var(--cor-perigo);
+    }
+    
+    .metric-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 10px 0;
+    }
+    
+    .metric-label {
+      font-size: 13px;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    .metric-icon {
+      font-size: 24px;
+      opacity: 0.7;
+    }
+    
+    .card {
+      background: var(--cor-card);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--cor-fundo);
+    }
+    
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--cor-primaria);
+    }
+    
+    /* ========== FORMS ========== */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-group.span-2 {
+      grid-column: span 2;
+    }
+    
+    .form-group.span-3 {
+      grid-column: span 3;
+    }
+    
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+      padding: 10px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 5px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+    }
+    
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    /* ========== BUTTONS ========== */
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: #0d47a1;
+      box-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
+    }
+    
+    .btn-success {
+      background: var(--cor-sucesso);
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background: #2e7d32;
+    }
+    
+    .btn-danger {
+      background: var(--cor-perigo);
+      color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background: #b71c1c;
+    }
+    
+    .btn-secondary {
+      background: #757575;
+      color: white;
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background: #616161;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* ========== TABLE ========== */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: white;
+    }
+    
+    .table thead {
+      background: var(--cor-fundo);
+      border-bottom: 2px solid #ddd;
+    }
+    
+    .table th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--cor-primaria);
+      white-space: nowrap;
+    }
+    
+    .table td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .table tbody tr:hover {
+      background: rgba(21, 101, 192, 0.05);
+    }
+    
+    /* ========== STATUS BADGES ========== */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-badge.available {
+      background: #e8f5e9;
+      color: var(--cor-sucesso);
+    }
+    
+    .status-badge.rented {
+      background: #e3f2fd;
+      color: var(--cor-primaria);
+    }
+    
+    .status-badge.maintenance {
+      background: #fff3e0;
+      color: var(--cor-alerta);
+    }
+    
+    .status-badge.pending {
+      background: #fff3e0;
+      color: var(--cor-alerta);
+    }
+    
+    .status-badge.approved {
+      background: #e8f5e9;
+      color: var(--cor-sucesso);
+    }
+    
+    .status-badge.active {
+      background: #e3f2fd;
+      color: var(--cor-primaria);
+    }
+    
+    .status-badge.rejected {
+      background: #ffebee;
+      color: var(--cor-perigo);
+    }
+    
+    /* ========== ALERTS ========== */
+    .alert {
+      padding: 12px 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      border-left: 4px solid;
+    }
+    
+    .alert.success {
+      background: #f1f8e9;
+      border-left-color: var(--cor-sucesso);
+      color: #2e7d32;
+    }
+    
+    .alert.error {
+      background: #ffebee;
+      border-left-color: var(--cor-perigo);
+      color: #d32f2f;
+    }
+    
+    .alert.warning {
+      background: #fff3e0;
+      border-left-color: var(--cor-alerta);
+      color: #e65100;
+    }
+    
+    .alert.info {
+      background: #e3f2fd;
+      border-left-color: var(--cor-primaria);
+      color: #1565c0;
+    }
+    
+    /* ========== FILTERS ========== */
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+      padding: 8px 16px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    
+    .filter-btn:hover {
+      border-color: var(--cor-primaria);
+    }
+    
+    .filter-btn.active {
+      background: var(--cor-primaria);
+      color: white;
+      border-color: var(--cor-primaria);
+    }
+    
+    /* ========== MODAL ========== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 25px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--cor-fundo);
+    }
+    
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--cor-primaria);
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    /* ========== FILE UPLOAD ========== */
+    .file-upload {
+      border: 2px dashed #ddd;
+      border-radius: 5px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .file-upload:hover {
+      border-color: var(--cor-primaria);
+      background: rgba(21, 101, 192, 0.05);
+    }
+    
+    .file-upload input[type="file"] {
+      display: none;
+    }
+    
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.mobile-visible {
+        transform: translateX(0);
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 10px;
+      }
+      
+      .mobile-toggle {
+        display: block;
+      }
+      
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-group.span-2,
+      .form-group.span-3 {
+        grid-column: span 1;
+      }
+      
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Menu Toggle -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+  
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>🏢 BASE250</h1>
+      <p>Painel Administrativo</p>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="#" class="active" onclick="showSection('overview')"><span class="icon">📊</span> Visão Geral</a></li>
+      <li><a href="#" onclick="showSection('apartments')"><span class="icon">🏠</span> Apartamentos</a></li>
+      <li><a href="#" onclick="showSection('tenants')"><span class="icon">👥</span> Inquilinos</a></li>
+      <li><a href="#" onclick="showSection('contracts')"><span class="icon">📄</span> Contratos</a></li>
+      <li><a href="#" onclick="showSection('notifications')"><span class="icon">🔔</span> Notificações</a></li>
+      <li><a href="#" onclick="showSection('config')"><span class="icon">⚙️</span> Configurações</a></li>
+    </ul>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <h2 id="pageTitle">Visão Geral</h2>
+      <div class="user-info">
+        <div class="user-avatar">AD</div>
+        <span>Admin</span>
+      </div>
+    </div>
+    
+    <!-- ========== OVERVIEW SECTION ========== -->
+    <div id="section-overview" class="content-section active">
+      <div class="metrics-grid">
+        <div class="metric-card success">
+          <div class="metric-icon">🏠</div>
+          <div class="metric-value" id="metric-rented">0</div>
+          <div class="metric-label">Apartamentos Alugados</div>
+        </div>
+        
+        <div class="metric-card">
+          <div class="metric-icon">💰</div>
+          <div class="metric-value" id="metric-revenue">R$ 0</div>
+          <div class="metric-label">Receita Total</div>
+        </div>
+        
+        <div class="metric-card warning">
+          <div class="metric-icon">⚠️</div>
+          <div class="metric-value" id="metric-delayed">0</div>
+          <div class="metric-label">Pagamentos Atrasados</div>
+        </div>
+        
+        <div class="metric-card danger">
+          <div class="metric-icon">📋</div>
+          <div class="metric-value" id="metric-pending">0</div>
+          <div class="metric-label">Pendências</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Apartamentos por Status</h3>
+        </div>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Apto</th>
+                <th>Status</th>
+                <th>Inquilino</th>
+                <th>Valor</th>
+                <th>Data Entrada</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="overview-apartments-table">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">Carregando dados...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== APARTMENTS SECTION ========== -->
+    <div id="section-apartments" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Gerenciar Apartamentos</h3>
+          <button class="btn btn-primary" onclick="openApartmentModal()">➕ Adicionar Apartamento</button>
+        </div>
+        
+        <div class="filters">
+          <button class="filter-btn active" onclick="filterApartments('all')">Todos</button>
+          <button class="filter-btn" onclick="filterApartments('available')">Disponível</button>
+          <button class="filter-btn" onclick="filterApartments('rented')">Alugado</button>
+          <button class="filter-btn" onclick="filterApartments('maintenance')">Manutenção</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Apto</th>
+                <th>Status</th>
+                <th>Inquilino</th>
+                <th>Valor</th>
+                <th>Prazo (Meses)</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="apartments-table">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 20px;">Carregando dados...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== TENANTS SECTION ========== -->
+    <div id="section-tenants" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Gerenciar Inquilinos</h3>
+          <button class="btn btn-primary" onclick="openTenantModal()">➕ Adicionar Inquilino</button>
+        </div>
+        
+        <div class="filters">
+          <button class="filter-btn active" onclick="filterTenants('all')">Todos</button>
+          <button class="filter-btn" onclick="filterTenants('pending')">Pendente Aprovação</button>
+          <button class="filter-btn" onclick="filterTenants('approved')">Aprovado</button>
+          <button class="filter-btn" onclick="filterTenants('active')">Ativo</button>
+          <button class="filter-btn" onclick="filterTenants('released')">Contrato Liberado</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Apartamento</th>
+                <th>Status</th>
+                <th>Documentos</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tenants-table">
+              <tr>
+                <td>João Silva</td>
+                <td>joao@email.com</td>
+                <td>(48) 99999-9999</td>
+                <td>101</td>
+                <td><span class="status-badge pending">Pendente</span></td>
+                <td>
+                  <span title="RG: ✓">📄</span>
+                  <span title="CPF: ✗">❌</span>
+                </td>
+                <td>
+                  <button class="btn btn-success" onclick="approveTenant('João Silva')">✓ Aprovar</button>
+                  <button class="btn btn-danger" onclick="rejectTenant('João Silva')">✗ Rejeitar</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Maria Santos</td>
+                <td>maria@email.com</td>
+                <td>(48) 98888-8888</td>
+                <td>102</td>
+                <td><span class="status-badge active">Ativo</span></td>
+                <td>
+                  <span title="RG: ✓">📄</span>
+                  <span title="CPF: ✓">📄</span>
+                </td>
+                <td>
+                  <button class="btn btn-primary" onclick="viewTenantDetails('Maria Santos')">👁 Visualizar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== CONTRACTS SECTION ========== -->
+    <div id="section-contracts" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Gerenciar Contratos</h3>
+          <button class="btn btn-primary" onclick="openContractModal()">➕ Gerar Contrato</button>
+        </div>
+        
+        <div class="filters">
+          <button class="filter-btn active" onclick="filterContracts('all')">Todos</button>
+          <button class="filter-btn" onclick="filterContracts('awaiting')">Aguardando Assinatura</button>
+          <button class="filter-btn" onclick="filterContracts('signed')">Assinado</button>
+          <button class="filter-btn" onclick="filterContracts('active')">Ativo</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Contrato</th>
+                <th>Apto</th>
+                <th>Inquilino</th>
+                <th>Valor</th>
+                <th>Data Início</th>
+                <th>Prazo</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="contracts-table">
+              <tr>
+                <td>#001</td>
+                <td>101</td>
+                <td>João Silva</td>
+                <td>R$ 1.500,00</td>
+                <td>01/01/2026</td>
+                <td>12 meses</td>
+                <td><span class="status-badge pending">Aguardando</span></td>
+                <td>
+                  <button class="btn btn-primary" onclick="viewContract('#001')">👁 Ver</button>
+                  <button class="btn btn-success" onclick="activateContract('#001')">✓ Ativar</button>
+                </td>
+              </tr>
+              <tr>
+                <td>#002</td>
+                <td>102</td>
+                <td>Maria Santos</td>
+                <td>R$ 1.800,00</td>
+                <td>15/12/2025</td>
+                <td>12 meses</td>
+                <td><span class="status-badge active">Ativo</span></td>
+                <td>
+                  <button class="btn btn-primary" onclick="viewContract('#002')">👁 Ver</button>
+                  <button class="btn btn-secondary" onclick="editContract('#002')">✏️ Editar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== NOTIFICATIONS SECTION ========== -->
+    <div id="section-notifications" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Notificações Pendentes</h3>
+          <button class="btn btn-primary" onclick="createNotification()">➕ Criar Notificação</button>
+        </div>
+        
+        <div id="notifications-list">
+          <div class="card" style="border-left: 4px solid var(--cor-alerta);">
+            <h4>💰 Lembrete de Pagamento - João Silva</h4>
+            <p style="margin: 10px 0; color: #666;">Apartamento: 101</p>
+            <p style="margin: 10px 0; color: #666;">Mensagem: Seu pagamento do aluguel vence em 3 dias (dia 05/02/2026).</p>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="previewNotification(1)">👁 Visualizar</button>
+              <button class="btn btn-success" onclick="sendNotification(1)">✉️ Enviar</button>
+              <button class="btn btn-danger" onclick="deleteNotification(1)">🗑️ Excluir</button>
+            </div>
+          </div>
+          
+          <div class="card" style="border-left: 4px solid var(--cor-perigo);">
+            <h4>⚠️ Aviso de Atraso - Maria Santos</h4>
+            <p style="margin: 10px 0; color: #666;">Apartamento: 102</p>
+            <p style="margin: 10px 0; color: #666;">Mensagem: Identificamos um atraso no pagamento. Por favor, regularize sua situação.</p>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="previewNotification(2)">👁 Visualizar</button>
+              <button class="btn btn-success" onclick="sendNotification(2)">✉️ Enviar</button>
+              <button class="btn btn-danger" onclick="deleteNotification(2)">🗑️ Excluir</button>
+            </div>
+          </div>
+          
+          <div class="card" style="border-left: 4px solid var(--cor-sucesso);">
+            <h4>✓ Confirmação de Contrato - Pedro Costa</h4>
+            <p style="margin: 10px 0; color: #666;">Apartamento: 103</p>
+            <p style="margin: 10px 0; color: #666;">Mensagem: Seu contrato foi assinado e está ativo. Bem-vindo!</p>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="previewNotification(3)">👁 Visualizar</button>
+              <button class="btn btn-success" onclick="sendNotification(3)">✉️ Enviar</button>
+              <button class="btn btn-danger" onclick="deleteNotification(3)">🗑️ Excluir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== CONFIGURATION SECTION ========== -->
+    <div id="section-config" class="content-section">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Configurações do Sistema</h3>
+        </div>
+        
+        <h4 style="margin-bottom: 15px;">📋 Dados do Proprietário</h4>
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label class="form-label">Nome do Proprietário</label>
+            <input type="text" class="form-input" id="config-owner-name" value="Residencial Itacorubi">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">CNPJ/CPF</label>
+            <input type="text" class="form-input" id="config-owner-doc" value="00.000.000/0000-00">
+          </div>
+          
+          <div class="form-group span-2">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="config-owner-email" value="contato@itacorubi.com.br">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Telefone</label>
+            <input type="tel" class="form-input" id="config-owner-phone" value="(48) 3333-3333">
+          </div>
+          
+          <div class="form-group span-3">
+            <label class="form-label">Endereço</label>
+            <input type="text" class="form-input" id="config-owner-address" value="Rua Principal, 123 - Itacorubi, Florianópolis/SC">
+          </div>
+        </div>
+        
+        <h4 style="margin: 25px 0 15px;">📄 Template de Contrato</h4>
+        <div class="form-group">
+          <label class="form-label">Conteúdo do Template</label>
+          <textarea class="form-textarea" id="config-contract-template" style="min-height: 200px;">CONTRATO DE LOCAÇÃO
+
+Locador: [NOME_PROPRIETARIO]
+Locatário: [NOME_INQUILINO]
+Apartamento: [NUMERO_APARTAMENTO]
+Valor: R$ [VALOR_ALUGUEL]
+Data de Início: [DATA_INICIO]
+Prazo: [PRAZO_MESES] meses
+
+Cláusulas:
+1. O pagamento deverá ser realizado até o dia [DIA_VENCIMENTO] de cada mês.
+2. O inquilino se compromete a manter o imóvel em bom estado.
+3. [DEMAIS_CLAUSULAS]
+
+Assinatura do Locador: _______________________
+Assinatura do Locatário: _______________________</textarea>
+        </div>
+        
+        <h4 style="margin: 25px 0 15px;">📧 Templates de Notificação</h4>
+        <div class="form-group">
+          <label class="form-label">Template - Lembrete de Pagamento</label>
+          <textarea class="form-textarea" id="config-notif-payment">Olá [NOME_INQUILINO],
+
+Lembramos que o pagamento do aluguel do Apartamento [NUMERO_APTO] vence no dia [DATA_VENCIMENTO].
+
+Valor: R$ [VALOR]
+
+Atenciosamente,
+Residencial Itacorubi</textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Template - Aviso de Atraso</label>
+          <textarea class="form-textarea" id="config-notif-delay">Olá [NOME_INQUILINO],
+
+Identificamos um atraso no pagamento do aluguel do Apartamento [NUMERO_APTO].
+
+Dias em atraso: [DIAS_ATRASO]
+Valor devido: R$ [VALOR]
+
+Por favor, regularize sua situação o quanto antes.
+
+Atenciosamente,
+Residencial Itacorubi</textarea>
+        </div>
+        
+        <div class="btn-group" style="margin-top: 20px;">
+          <button class="btn btn-success" onclick="saveConfig()">💾 Salvar Configurações</button>
+          <button class="btn btn-secondary" onclick="resetConfig()">🔄 Restaurar Padrões</button>
+        </div>
+        
+        <div id="config-result" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <!-- ========== MODAL: APARTMENT ========== -->
+  <div id="apartmentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Adicionar/Editar Apartamento</h3>
+        <button class="modal-close" onclick="closeModal('apartmentModal')">&times;</button>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Número do Apto</label>
+          <input type="text" class="form-input" id="modal-apto-number" placeholder="Ex: 101">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="modal-apto-status">
+            <option value="available">Disponível</option>
+            <option value="rented">Alugado</option>
+            <option value="maintenance">Manutenção</option>
+          </select>
+        </div>
+        
+        <div class="form-group span-2">
+          <label class="form-label">Valor do Aluguel (R$)</label>
+          <input type="number" class="form-input" id="modal-apto-value" placeholder="Ex: 1500.00" step="0.01">
+        </div>
+        
+        <div class="form-group span-2">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-textarea" id="modal-apto-description" placeholder="Ex: 2 quartos, 1 banheiro, sala, cozinha..."></textarea>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="saveApartment()">💾 Salvar</button>
+        <button class="btn btn-secondary" onclick="closeModal('apartmentModal')">❌ Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ========== MODAL: TENANT ========== -->
+  <div id="tenantModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Adicionar/Editar Inquilino</h3>
+        <button class="modal-close" onclick="closeModal('tenantModal')">&times;</button>
+      </div>
+      
+      <div class="alert info">
+        <strong>Placeholder para Sistema de Login Futuro:</strong><br>
+        Quando o sistema de login para inquilinos for implementado, os dados abaixo serão usados para criar as credenciais de acesso.
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label class="form-label">Nome Completo</label>
+          <input type="text" class="form-input" id="modal-tenant-name" placeholder="Ex: João da Silva">
+        </div>
+        
+        <div class="form-group span-2">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="modal-tenant-email" placeholder="Ex: joao@email.com">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Telefone</label>
+          <input type="tel" class="form-input" id="modal-tenant-phone" placeholder="(48) 99999-9999">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">CPF</label>
+          <input type="text" class="form-input" id="modal-tenant-cpf" placeholder="000.000.000-00">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">RG</label>
+          <input type="text" class="form-input" id="modal-tenant-rg" placeholder="0.000.000">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Apartamento</label>
+          <input type="text" class="form-input" id="modal-tenant-apartment" placeholder="Ex: 101">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="modal-tenant-status">
+            <option value="pending">Pendente Aprovação</option>
+            <option value="approved">Aprovado</option>
+            <option value="active">Ativo</option>
+            <option value="released">Contrato Liberado</option>
+          </select>
+        </div>
+      </div>
+      
+      <h4 style="margin: 20px 0 10px;">📎 Upload de Documentos</h4>
+      <div class="alert info">
+        <strong>Placeholders de Upload:</strong> RG, CPF, Comprovante de Renda, Comprovante de Residência
+      </div>
+      
+      <div class="file-upload" onclick="document.getElementById('tenant-doc-rg').click()">
+        <input type="file" id="tenant-doc-rg" accept=".pdf,.jpg,.png">
+        <p>📄 Upload RG (Clique para selecionar)</p>
+      </div>
+      
+      <div class="file-upload" onclick="document.getElementById('tenant-doc-cpf').click()" style="margin-top: 10px;">
+        <input type="file" id="tenant-doc-cpf" accept=".pdf,.jpg,.png">
+        <p>📄 Upload CPF (Clique para selecionar)</p>
+      </div>
+      
+      <div class="btn-group" style="margin-top: 20px;">
+        <button class="btn btn-success" onclick="saveTenant()">💾 Salvar</button>
+        <button class="btn btn-secondary" onclick="closeModal('tenantModal')">❌ Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ========== MODAL: CONTRACT ========== -->
+  <div id="contractModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Gerar Contrato</h3>
+        <button class="modal-close" onclick="closeModal('contractModal')">&times;</button>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Apartamento</label>
+          <input type="text" class="form-input" id="modal-contract-apartment" placeholder="Ex: 101">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Inquilino</label>
+          <input type="text" class="form-input" id="modal-contract-tenant" placeholder="Nome do Inquilino">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Valor (R$)</label>
+          <input type="number" class="form-input" id="modal-contract-value" placeholder="1500.00" step="0.01">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Data Início</label>
+          <input type="date" class="form-input" id="modal-contract-start">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Prazo (meses)</label>
+          <input type="number" class="form-input" id="modal-contract-duration" placeholder="12" min="1">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="modal-contract-status">
+            <option value="awaiting">Aguardando Assinatura</option>
+            <option value="signed">Assinado</option>
+            <option value="active">Ativo</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="generateContract()">📄 Gerar Contrato</button>
+        <button class="btn btn-secondary" onclick="closeModal('contractModal')">❌ Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // ========== NAVIGATION ==========
+    function showSection(sectionName) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      
+      // Show selected section
+      document.getElementById('section-' + sectionName).classList.add('active');
+      
+      // Update menu
+      document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        link.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Update page title
+      const titles = {
+        'overview': 'Visão Geral',
+        'apartments': 'Apartamentos',
+        'tenants': 'Inquilinos',
+        'contracts': 'Contratos',
+        'notifications': 'Notificações',
+        'config': 'Configurações'
+      };
+      document.getElementById('pageTitle').textContent = titles[sectionName];
+      
+      // Close mobile sidebar
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('mobile-visible');
+      }
+    }
+    
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('mobile-visible');
+    }
+    
+    // ========== MODALS ==========
+    function openApartmentModal() {
+      document.getElementById('apartmentModal').classList.add('active');
+    }
+    
+    function openTenantModal() {
+      document.getElementById('tenantModal').classList.add('active');
+    }
+    
+    function openContractModal() {
+      document.getElementById('contractModal').classList.add('active');
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+    
+    // ========== APARTMENTS ==========
+    function filterApartments(status) {
+      document.querySelectorAll('.filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // TODO: Implement filtering logic with Google Sheets integration
+      showAlert('info', `Filtrando apartamentos: ${status}`);
+    }
+    
+    function saveApartment() {
+      const number = document.getElementById('modal-apto-number').value;
+      const status = document.getElementById('modal-apto-status').value;
+      const value = document.getElementById('modal-apto-value').value;
+      const description = document.getElementById('modal-apto-description').value;
+      
+      if (!number || !value) {
+        showAlert('error', 'Preencha todos os campos obrigatórios!');
+        return;
+      }
+      
+      // TODO: Integrate with Google Sheets via google.script.run
+      showAlert('success', `Apartamento ${number} salvo com sucesso!`);
+      closeModal('apartmentModal');
+      
+      // Clear form
+      document.getElementById('modal-apto-number').value = '';
+      document.getElementById('modal-apto-value').value = '';
+      document.getElementById('modal-apto-description').value = '';
+    }
+    
+    // ========== TENANTS ==========
+    function filterTenants(status) {
+      document.querySelectorAll('.filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // TODO: Implement filtering logic
+      showAlert('info', `Filtrando inquilinos: ${status}`);
+    }
+    
+    function approveTenant(name) {
+      if (confirm(`Aprovar inquilino ${name}?`)) {
+        // TODO: Update in Google Sheets
+        showAlert('success', `Inquilino ${name} aprovado!`);
+      }
+    }
+    
+    function rejectTenant(name) {
+      if (confirm(`Rejeitar inquilino ${name}?`)) {
+        // TODO: Update in Google Sheets
+        showAlert('error', `Inquilino ${name} rejeitado!`);
+      }
+    }
+    
+    function viewTenantDetails(name) {
+      showAlert('info', `Visualizando detalhes de ${name}`);
+      // TODO: Open modal with tenant details
+    }
+    
+    function saveTenant() {
+      const name = document.getElementById('modal-tenant-name').value;
+      const email = document.getElementById('modal-tenant-email').value;
+      
+      if (!name || !email) {
+        showAlert('error', 'Preencha nome e email!');
+        return;
+      }
+      
+      // TODO: Save to Google Sheets
+      showAlert('success', `Inquilino ${name} salvo com sucesso!`);
+      closeModal('tenantModal');
+    }
+    
+    // ========== CONTRACTS ==========
+    function filterContracts(status) {
+      document.querySelectorAll('.filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // TODO: Implement filtering logic
+      showAlert('info', `Filtrando contratos: ${status}`);
+    }
+    
+    function viewContract(id) {
+      showAlert('info', `Visualizando contrato ${id}`);
+      // TODO: Open contract preview
+    }
+    
+    function activateContract(id) {
+      if (confirm(`Ativar contrato ${id}?`)) {
+        // TODO: Update in Google Sheets
+        showAlert('success', `Contrato ${id} ativado!`);
+      }
+    }
+    
+    function editContract(id) {
+      showAlert('info', `Editando contrato ${id}`);
+      // TODO: Open edit modal
+    }
+    
+    function generateContract() {
+      const apartment = document.getElementById('modal-contract-apartment').value;
+      const tenant = document.getElementById('modal-contract-tenant').value;
+      
+      if (!apartment || !tenant) {
+        showAlert('error', 'Preencha apartamento e inquilino!');
+        return;
+      }
+      
+      // TODO: Generate contract via Google Sheets
+      showAlert('success', 'Contrato gerado com sucesso!');
+      closeModal('contractModal');
+    }
+    
+    // ========== NOTIFICATIONS ==========
+    function createNotification() {
+      showAlert('info', 'Funcionalidade: Criar nova notificação');
+      // TODO: Open notification creation modal
+    }
+    
+    function previewNotification(id) {
+      showAlert('info', `Visualizando notificação #${id}`);
+      // TODO: Show notification preview
+    }
+    
+    function sendNotification(id) {
+      if (confirm('Enviar esta notificação?')) {
+        // TODO: Send via email/WhatsApp
+        showAlert('success', `Notificação #${id} enviada!`);
+      }
+    }
+    
+    function deleteNotification(id) {
+      if (confirm('Excluir esta notificação?')) {
+        // TODO: Delete from queue
+        showAlert('success', `Notificação #${id} excluída!`);
+      }
+    }
+    
+    // ========== CONFIG ==========
+    function saveConfig() {
+      // TODO: Save to Google Sheets or Properties Service
+      showAlert('success', 'Configurações salvas com sucesso!');
+    }
+    
+    function resetConfig() {
+      if (confirm('Restaurar configurações padrão?')) {
+        // TODO: Reset to defaults
+        showAlert('info', 'Configurações restauradas!');
+      }
+    }
+    
+    // ========== HELPERS ==========
+    function showAlert(type, message) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert ${type}`;
+      alertDiv.textContent = message;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.right = '20px';
+      alertDiv.style.zIndex = '3000';
+      alertDiv.style.minWidth = '300px';
+      alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3000);
+    }
+    
+    // ========== INIT: Load Overview Data ==========
+    function loadOverviewData() {
+      // TODO: Load from Google Sheets
+      // For now, showing placeholder data
+      document.getElementById('metric-rented').textContent = '8';
+      document.getElementById('metric-revenue').textContent = 'R$ 12.000';
+      document.getElementById('metric-delayed').textContent = '2';
+      document.getElementById('metric-pending').textContent = '3';
+      
+      // Sample apartment data
+      const sampleData = `
+        <tr>
+          <td>101</td>
+          <td><span class="status-badge rented">Alugado</span></td>
+          <td>João Silva</td>
+          <td>R$ 1.500,00</td>
+          <td>01/01/2026</td>
+          <td><button class="btn btn-primary" onclick="showSection('apartments')">Ver</button></td>
+        </tr>
+        <tr>
+          <td>102</td>
+          <td><span class="status-badge rented">Alugado</span></td>
+          <td>Maria Santos</td>
+          <td>R$ 1.800,00</td>
+          <td>15/12/2025</td>
+          <td><button class="btn btn-primary" onclick="showSection('apartments')">Ver</button></td>
+        </tr>
+        <tr>
+          <td>103</td>
+          <td><span class="status-badge available">Disponível</span></td>
+          <td>-</td>
+          <td>R$ 1.600,00</td>
+          <td>-</td>
+          <td><button class="btn btn-primary" onclick="showSection('apartments')">Ver</button></td>
+        </tr>
+      `;
+      document.getElementById('overview-apartments-table').innerHTML = sampleData;
+      
+      // Load apartments table
+      document.getElementById('apartments-table').innerHTML = sampleData;
+    }
+    
+    // Load data on page load
+    window.onload = function() {
+      loadOverviewData();
+    };
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+      }
+    };
+  </script>
+</body>
+</html>
