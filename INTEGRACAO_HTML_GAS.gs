@@ -5770,13 +5770,395 @@ function onOpen(e) {
   
   ui.createMenu('🚀 BASE250')
     .addItem('📱 Abrir Painel Integrado', 'abrirPainelIntegrado')
+    .addItem('🏢 Abrir Painel Administrativo', 'abrirPainelAdministrativo')
     .addToUi();
+}
+
+/**
+ * TRIGGER AUTOMÁTICO PARA GOOGLE FORMS
+ * Sincroniza automaticamente dados do Forms para a aba Inquilinos/Contratos
+ * Instale este trigger em: Edit > Current project's triggers > Add trigger
+ * Selecione: onFormSubmit, From spreadsheet, On form submit
+ */
+function onFormSubmit(e) {
+  try {
+    Logger.log('═══════════════════════════════════════════════════');
+    Logger.log('📥 TRIGGER AUTOMÁTICO: Nova submissão do Forms detectada');
+    Logger.log('═══════════════════════════════════════════════════');
+    
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const abaForms = ss.getSheetByName(CONFIG_FORMS.abaForms);
+    const abaInquilinos = ss.getSheetByName('Inquilinos') || ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+    
+    if (!abaForms || !abaInquilinos) {
+      Logger.log('❌ Erro: Aba Form_Responses ou Inquilinos não encontrada');
+      return;
+    }
+    
+    // Pega a última linha submetida
+    const ultimaLinha = abaForms.getLastRow();
+    Logger.log(`📋 Processando linha ${ultimaLinha} da aba ${CONFIG_FORMS.abaForms}`);
+    
+    // Lê os dados da última submissão
+    const cabecalhos = abaForms.getRange(1, 1, 1, abaForms.getLastColumn()).getValues()[0];
+    const dadosSubmissao = abaForms.getRange(ultimaLinha, 1, 1, cabecalhos.length).getValues()[0];
+    
+    // Função helper para ler valores
+    const ler = (campo) => {
+      const titulo = CONFIG_FORMS.mapa[campo];
+      if (!titulo) return '';
+      
+      let idx = cabecalhos.indexOf(titulo);
+      if (idx === -1) {
+        idx = buscarCabecalhoFlexivel(cabecalhos, titulo);
+      }
+      
+      if (idx === -1) {
+        Logger.log(`⚠️ Campo "${campo}" não encontrado`);
+        return '';
+      }
+      
+      const valor = dadosSubmissao[idx];
+      return valor || '';
+    };
+    
+    // Extrai dados do formulário
+    const dados = {
+      timestamp: dadosSubmissao[0] || new Date(),
+      nome: ler('nome')?.toString().trim().toUpperCase(),
+      nacionalidade: ler('nacionalidade')?.toString().toUpperCase(),
+      estadoCivil: ler('estadoCivil')?.toString().toUpperCase(),
+      profissao: ler('profissao')?.toString().toUpperCase(),
+      cpf: ler('cpf')?.toString().replace(/\D/g, ''),
+      endereco: ler('endereco')?.toString().toUpperCase(),
+      dataNascimento: ler('dataNascimento'),
+      telefone: ler('telefone')?.toString(),
+      email: ler('email')?.toString().trim().toLowerCase(),
+      dataEntrada: ler('dataEntrada'),
+      linkDocsForms: ler('linkDocsForms'),
+      linkFotoForms: ler('linkFotoForms')
+    };
+    
+    Logger.log('📋 Dados extraídos do Forms:');
+    Logger.log(`  Nome: ${dados.nome}`);
+    Logger.log(`  Email: ${dados.email}`);
+    Logger.log(`  Telefone: ${dados.telefone}`);
+    Logger.log(`  CPF: ${dados.cpf}`);
+    
+    // Adiciona ou atualiza na aba Inquilinos
+    sincronizarInquilinoNaAba(abaInquilinos, dados, ultimaLinha);
+    
+    // Registra auditoria
+    try {
+      if (typeof registrarAuditoriaEnvio === 'function') {
+        registrarAuditoriaEnvio('AUTO', dados.nome, `FORM SUBMETIDO AUTOMATICAMENTE - Linha ${ultimaLinha}`);
+      }
+    } catch (e) {
+      Logger.log('⚠️ Aviso: não foi possível registrar auditoria: ' + e.message);
+    }
+    
+    Logger.log('✅ Sincronização automática concluída com sucesso!');
+    Logger.log('═══════════════════════════════════════════════════');
+    
+  } catch (erro) {
+    Logger.log('❌ ERRO no trigger automático: ' + erro.message);
+    Logger.log('Stack: ' + erro.stack);
+    
+    // Envia email de notificação sobre o erro
+    try {
+      MailApp.sendEmail({
+        to: CONFIG.adminEmail,
+        subject: '⚠️ BASE250: Erro no Trigger Automático do Forms',
+        body: `Erro ao processar submissão automática do Forms:\n\n${erro.message}\n\nStack:\n${erro.stack}`
+      });
+    } catch (e) {
+      Logger.log('⚠️ Não foi possível enviar email de erro: ' + e.message);
+    }
+  }
+}
+
+/**
+ * SINCRONIZAR INQUILINO NA ABA
+ * Adiciona ou atualiza dados do inquilino na aba Inquilinos/Contratos
+ */
+function sincronizarInquilinoNaAba(abaInquilinos, dados, linhaForm) {
+  const valores = abaInquilinos.getDataRange().getValues();
+  
+  // Procura por CPF ou email existente
+  let linhaExistente = -1;
+  for (let i = 1; i < valores.length; i++) {
+    const cpfExistente = (valores[i][COL_CONTRATOS.cpf - 1] || '').toString().replace(/\D/g, '');
+    const emailExistente = (valores[i][COL_CONTRATOS.email - 1] || '').toString().toLowerCase();
+    
+    if ((dados.cpf && cpfExistente === dados.cpf) || 
+        (dados.email && emailExistente === dados.email)) {
+      linhaExistente = i + 1;
+      Logger.log(`🔄 Inquilino encontrado na linha ${linhaExistente} - Atualizando...`);
+      break;
+    }
+  }
+  
+  if (linhaExistente > 0) {
+    // Atualiza linha existente
+    if (dados.nome) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.inquilino).setValue(dados.nome);
+    if (dados.nacionalidade) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.nacionalidade).setValue(dados.nacionalidade);
+    if (dados.estadoCivil) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.estadoCivil).setValue(dados.estadoCivil);
+    if (dados.profissao) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.profissao).setValue(dados.profissao);
+    if (dados.cpf) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.cpf).setValue(formatarCPF(dados.cpf));
+    if (dados.dataNascimento) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.dataNascimento).setValue(dados.dataNascimento);
+    if (dados.endereco) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.endereco).setValue(dados.endereco);
+    if (dados.telefone) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.telefone).setValue(formatarTelefone(dados.telefone));
+    if (dados.email) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.email).setValue(dados.email);
+    if (dados.dataEntrada) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.dataEntrada).setValue(dados.dataEntrada);
+    abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.linhaForm).setValue(linhaForm);
+    
+    Logger.log(`✅ Inquilino atualizado: ${dados.nome}`);
+  } else {
+    // Adiciona nova linha
+    Logger.log(`➕ Novo inquilino - Adicionando à aba...`);
+    
+    const novaLinha = [];
+    const totalCols = abaInquilinos.getLastColumn();
+    for (let c = 0; c < totalCols; c++) novaLinha.push('');
+    
+    // Preenche dados básicos
+    novaLinha[COL_CONTRATOS.apto - 1] = ''; // Apartamento será preenchido posteriormente
+    novaLinha[COL_CONTRATOS.inquilino - 1] = dados.nome || '';
+    novaLinha[COL_CONTRATOS.status - 1] = 'Pendente';
+    novaLinha[COL_CONTRATOS.linhaForm - 1] = linhaForm;
+    novaLinha[COL_CONTRATOS.nacionalidade - 1] = dados.nacionalidade || '';
+    novaLinha[COL_CONTRATOS.estadoCivil - 1] = dados.estadoCivil || '';
+    novaLinha[COL_CONTRATOS.profissao - 1] = dados.profissao || '';
+    novaLinha[COL_CONTRATOS.cpf - 1] = dados.cpf ? formatarCPF(dados.cpf) : '';
+    novaLinha[COL_CONTRATOS.endereco - 1] = dados.endereco || '';
+    novaLinha[COL_CONTRATOS.dataNascimento - 1] = dados.dataNascimento || '';
+    novaLinha[COL_CONTRATOS.telefone - 1] = dados.telefone ? formatarTelefone(dados.telefone) : '';
+    novaLinha[COL_CONTRATOS.email - 1] = dados.email || '';
+    novaLinha[COL_CONTRATOS.dataEntrada - 1] = dados.dataEntrada || '';
+    
+    abaInquilinos.appendRow(novaLinha);
+    Logger.log(`✅ Novo inquilino adicionado: ${dados.nome}`);
+  }
 }
 
 /**
  * ABRIR PAINEL
  */
 function abrirPainelIntegrado() {
-  const html = HtmlService.createHtmlOutputFromFile('painel-completo-base250-INTEGRADO');
+  const html = HtmlService.createHtmlOutputFromFile('painel-completo-base250');
   SpreadsheetApp.getUi().showModelessDialog(html, '🚀 BASE250 - Painel Integrado');
+}
+
+/**
+ * ABRIR PAINEL ADMINISTRATIVO
+ */
+function abrirPainelAdministrativo() {
+  const html = HtmlService.createHtmlOutputFromFile('admin')
+    .setWidth(1400)
+    .setHeight(900);
+  SpreadsheetApp.getUi().showModelessDialog(html, '🏢 BASE250 - Painel Administrativo');
+}
+
+// =====================================================
+// ▼▼▼ FUNÇÕES PARA ADMIN.HTML ▼▼▼
+// =====================================================
+
+/**
+ * LISTAR TODOS OS INQUILINOS
+ * Retorna array de objetos com dados dos inquilinos
+ */
+function listarInquilinos() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const abaInquilinos = ss.getSheetByName('Inquilinos') || ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+    
+    if (!abaInquilinos) {
+      return { sucesso: false, erro: 'Aba não encontrada' };
+    }
+    
+    const dados = abaInquilinos.getDataRange().getValues();
+    const inquilinos = [];
+    
+    for (let i = 1; i < dados.length; i++) {
+      const linha = dados[i];
+      inquilinos.push({
+        apto: linha[COL_CONTRATOS.apto - 1] || '',
+        nome: linha[COL_CONTRATOS.inquilino - 1] || '',
+        cpf: linha[COL_CONTRATOS.cpf - 1] || '',
+        telefone: linha[COL_CONTRATOS.telefone - 1] || '',
+        email: linha[COL_CONTRATOS.email - 1] || '',
+        status: linha[COL_CONTRATOS.status - 1] || 'Pendente',
+        dataEntrada: linha[COL_CONTRATOS.dataEntrada - 1] ? formatarData(linha[COL_CONTRATOS.dataEntrada - 1]) : '',
+        valorAluguel: linha[COL_CONTRATOS.valorAluguel - 1] || '',
+        nacionalidade: linha[COL_CONTRATOS.nacionalidade - 1] || '',
+        estadoCivil: linha[COL_CONTRATOS.estadoCivil - 1] || '',
+        profissao: linha[COL_CONTRATOS.profissao - 1] || '',
+        endereco: linha[COL_CONTRATOS.endereco - 1] || '',
+        linkPasta: linha[COL_CONTRATOS.linkPasta - 1] || ''
+      });
+    }
+    
+    return { sucesso: true, inquilinos: inquilinos };
+  } catch (e) {
+    Logger.log('Erro listarInquilinos: ' + e.message);
+    return { sucesso: false, erro: e.message };
+  }
+}
+
+/**
+ * CRIAR OU ATUALIZAR INQUILINO
+ */
+function salvarInquilino(dados) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const abaInquilinos = ss.getSheetByName('Inquilinos') || ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+    
+    if (!abaInquilinos) {
+      return { sucesso: false, erro: 'Aba não encontrada' };
+    }
+    
+    const valores = abaInquilinos.getDataRange().getValues();
+    
+    // Busca por CPF ou email existente
+    let linhaExistente = -1;
+    for (let i = 1; i < valores.length; i++) {
+      const cpfExistente = (valores[i][COL_CONTRATOS.cpf - 1] || '').toString().replace(/\D/g, '');
+      const emailExistente = (valores[i][COL_CONTRATOS.email - 1] || '').toString().toLowerCase();
+      
+      if ((dados.cpf && cpfExistente === dados.cpf.replace(/\D/g, '')) || 
+          (dados.email && emailExistente === dados.email.toLowerCase())) {
+        linhaExistente = i + 1;
+        break;
+      }
+    }
+    
+    if (linhaExistente > 0) {
+      // Atualiza linha existente
+      if (dados.nome) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.inquilino).setValue(dados.nome.toUpperCase());
+      if (dados.apto) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.apto).setValue(dados.apto);
+      if (dados.cpf) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.cpf).setValue(formatarCPF(dados.cpf));
+      if (dados.telefone) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.telefone).setValue(formatarTelefone(dados.telefone));
+      if (dados.email) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.email).setValue(dados.email.toLowerCase());
+      if (dados.valorAluguel) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.valorAluguel).setValue(dados.valorAluguel);
+      if (dados.status) abaInquilinos.getRange(linhaExistente, COL_CONTRATOS.status).setValue(dados.status);
+      
+      return { sucesso: true, atualizado: true };
+    } else {
+      // Adiciona nova linha
+      const novaLinha = [];
+      const totalCols = abaInquilinos.getLastColumn();
+      for (let c = 0; c < totalCols; c++) novaLinha.push('');
+      
+      novaLinha[COL_CONTRATOS.apto - 1] = dados.apto || '';
+      novaLinha[COL_CONTRATOS.inquilino - 1] = dados.nome ? dados.nome.toUpperCase() : '';
+      novaLinha[COL_CONTRATOS.cpf - 1] = dados.cpf ? formatarCPF(dados.cpf) : '';
+      novaLinha[COL_CONTRATOS.telefone - 1] = dados.telefone ? formatarTelefone(dados.telefone) : '';
+      novaLinha[COL_CONTRATOS.email - 1] = dados.email ? dados.email.toLowerCase() : '';
+      novaLinha[COL_CONTRATOS.valorAluguel - 1] = dados.valorAluguel || '';
+      novaLinha[COL_CONTRATOS.status - 1] = dados.status || 'Pendente';
+      
+      abaInquilinos.appendRow(novaLinha);
+      
+      return { sucesso: true, criado: true };
+    }
+  } catch (e) {
+    Logger.log('Erro salvarInquilino: ' + e.message);
+    return { sucesso: false, erro: e.message };
+  }
+}
+
+/**
+ * ENVIAR NOTIFICAÇÃO POR EMAIL
+ */
+function enviarNotificacao(dados) {
+  try {
+    const destinatario = dados.destinatario;
+    const assunto = dados.assunto;
+    const mensagem = dados.mensagem;
+    
+    if (!destinatario || !assunto || !mensagem) {
+      return { sucesso: false, erro: 'Dados incompletos para envio' };
+    }
+    
+    MailApp.sendEmail({
+      to: destinatario,
+      subject: assunto,
+      body: mensagem,
+      name: 'BASE250 - Sistema de Gestão'
+    });
+    
+    // Registra auditoria
+    try {
+      if (typeof registrarAuditoriaEnvio === 'function') {
+        registrarAuditoriaEnvio('NOTIF', destinatario, `Email: ${assunto}`);
+      }
+    } catch (e) {
+      Logger.log('Aviso: não foi possível registrar auditoria: ' + e.message);
+    }
+    
+    return { sucesso: true };
+  } catch (e) {
+    Logger.log('Erro enviarNotificacao: ' + e.message);
+    return { sucesso: false, erro: e.message };
+  }
+}
+
+/**
+ * OBTER ESTATÍSTICAS DO SISTEMA
+ */
+function obterEstatisticas() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const abaContratos = ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+    
+    if (!abaContratos) {
+      return { sucesso: false, erro: 'Aba não encontrada' };
+    }
+    
+    const dados = abaContratos.getDataRange().getValues();
+    
+    let totalApartamentos = 0;
+    let ocupados = 0;
+    let disponiveis = 0;
+    let pendentes = 0;
+    let totalInquilinos = 0;
+    let receitaMensal = 0;
+    
+    for (let i = 1; i < dados.length; i++) {
+      const linha = dados[i];
+      const apto = linha[COL_CONTRATOS.apto - 1];
+      const status = (linha[COL_CONTRATOS.status - 1] || '').toString().toLowerCase();
+      const valor = linha[COL_CONTRATOS.valorAluguel - 1] || 0;
+      
+      if (apto) {
+        totalApartamentos++;
+        
+        if (status.includes('ocupado')) {
+          ocupados++;
+          totalInquilinos++;
+          receitaMensal += Number(valor) || 0;
+        } else if (status.includes('disponível') || status.includes('disponivel')) {
+          disponiveis++;
+        } else {
+          pendentes++;
+        }
+      }
+    }
+    
+    return {
+      sucesso: true,
+      estatisticas: {
+        totalApartamentos,
+        ocupados,
+        disponiveis,
+        pendentes,
+        totalInquilinos,
+        receitaMensal,
+        taxaOcupacao: totalApartamentos > 0 ? Math.round((ocupados / totalApartamentos) * 100) : 0
+      }
+    };
+  } catch (e) {
+    Logger.log('Erro obterEstatisticas: ' + e.message);
+    return { sucesso: false, erro: e.message };
+  }
 }
