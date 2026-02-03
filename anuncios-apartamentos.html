@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BASE250 - Apartamentos Disponíveis</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --cor-primaria: #0d47a1;
+      --cor-secundaria: #1565c0;
+      --cor-sucesso: #2e7d32;
+      --cor-whatsapp: #25d366;
+      --cor-fundo: #f5f5f5;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--cor-fundo);
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .header-info {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .header-info span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    /* Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    /* Filtros */
+    .filtros {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .filtro-btn {
+      padding: 12px 24px;
+      border: 2px solid var(--cor-primaria);
+      background: white;
+      color: var(--cor-primaria);
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .filtro-btn:hover,
+    .filtro-btn.ativo {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    /* Grid de Cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 30px;
+    }
+    
+    /* Card de Apartamento */
+    .apto-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .apto-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    /* Imagem do Card */
+    .card-imagem {
+      position: relative;
+      height: 220px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
+    }
+    
+    .card-imagem img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .card-imagem-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 60px;
+    }
+    
+    .card-imagem-placeholder span {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    
+    .card-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .badge-disponivel {
+      background: var(--cor-sucesso);
+      color: white;
+    }
+    
+    .badge-ocupado {
+      background: #f44336;
+      color: white;
+    }
+    
+    .badge-reservado {
+      background: #ff9800;
+      color: white;
+    }
+    
+    /* Bloqueio de foto para apartamentos ocupados */
+    .apto-card[data-status="ocupado"] .card-imagem {
+      position: relative;
+    }
+    
+    .apto-card[data-status="ocupado"] .card-imagem::after {
+      content: '🔒 OCUPADO';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    
+    .apto-card[data-status="ocupado"] .card-imagem img,
+    .apto-card[data-status="ocupado"] .card-imagem-placeholder {
+      filter: blur(10px);
+    }
+    
+    /* Botão de edição no card */
+    .btn-editar-card {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(255,255,255,0.95);
+      color: var(--cor-primaria);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s;
+      display: none;
+    }
+    
+    .admin-mode .btn-editar-card {
+      display: block;
+    }
+    
+    .btn-editar-card:hover {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    /* Botão Admin no Header */
+    .btn-admin {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--cor-primaria);
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+    }
+    
+    .btn-admin:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+    
+    .btn-admin.ativo {
+      background: #f44336;
+    }
+    
+    /* Modal de Edição */
+    .modal-editar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal-editar.ativo {
+      display: flex;
+    }
+    
+    .modal-editar-conteudo {
+      background: white;
+      border-radius: 16px;
+      max-width: 450px;
+      width: 100%;
+      animation: modalIn 0.3s ease;
+    }
+    
+    .modal-editar-header {
+      background: var(--cor-primaria);
+      color: white;
+      padding: 20px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-editar-header h3 {
+      font-size: 18px;
+    }
+    
+    .modal-editar-body {
+      padding: 25px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+    }
+    
+    .btn-salvar {
+      width: 100%;
+      padding: 14px;
+      background: var(--cor-sucesso);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-salvar:hover {
+      background: #256b29;
+    }
+    
+    .card-numero {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    /* Conteúdo do Card */
+    .card-conteudo {
+      padding: 25px;
+    }
+    
+    .card-titulo {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--cor-primaria);
+      margin-bottom: 15px;
+    }
+    
+    .card-descricao {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.7;
+    }
+    
+    .card-caracteristicas {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .caracteristica {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #555;
+    }
+    
+    .caracteristica-icon {
+      font-size: 18px;
+    }
+    
+    /* Preço */
+    .card-preco {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    
+    .preco-label {
+      font-size: 13px;
+      color: #888;
+    }
+    
+    .preco-valor {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--cor-sucesso);
+    }
+    
+    .preco-periodo {
+      font-size: 14px;
+      color: #888;
+    }
+    
+    /* Botões do Card */
+    .card-acoes {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    .btn-interesse {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .btn-interesse:hover {
+      background: #0a3d91;
+      box-shadow: 0 5px 15px rgba(13, 71, 161, 0.3);
+    }
+    
+    .btn-whatsapp {
+      background: var(--cor-whatsapp);
+      color: white;
+    }
+    
+    .btn-whatsapp:hover {
+      background: #1da851;
+      box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+    }
+    
+    .btn-copiar {
+      background: #f5f5f5;
+      color: #333;
+      border: 2px solid #ddd;
+    }
+    
+    .btn-copiar:hover {
+      background: #eee;
+      border-color: #ccc;
+    }
+    
+    /* Toast de Notificação */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #333;
+      color: white;
+      padding: 16px 30px;
+      border-radius: 10px;
+      font-size: 14px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .toast.mostrar {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    
+    /* Modal de Interesse */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal-overlay.ativo {
+      display: flex;
+    }
+    
+    .modal {
+      background: white;
+      border-radius: 16px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalIn 0.3s ease;
+    }
+    
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .modal-header {
+      background: var(--cor-primaria);
+      color: white;
+      padding: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h2 {
+      font-size: 20px;
+    }
+    
+    .modal-fechar {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    
+    .modal-body {
+      padding: 30px;
+    }
+    
+    .form-grupo {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 4px rgba(13, 71, 161, 0.1);
+    }
+    
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .btn-enviar {
+      width: 100%;
+      padding: 16px;
+      background: var(--cor-sucesso);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-enviar:hover {
+      background: #256b29;
+      box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+    }
+    
+    /* Footer */
+    .footer {
+      background: #333;
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      margin-top: 50px;
+    }
+    
+    .footer a {
+      color: #90caf9;
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Responsivo */
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 24px;
+      }
+      
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .card-acoes {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <h1>🏢 BASE250 - Residencial Itacorubi</h1>
+    <p>Apartamentos mobiliados para locação em Florianópolis/SC</p>
+    <div class="header-info">
+      <span>📍 Servidão Joaquim Soares, 250 - Itacorubi</span>
+      <span>📞 (48) 99935-2627</span>
+      <span>✉️ eng.diogoj@gmail.com</span>
+    </div>
+  </header>
+
+  <!-- Container Principal -->
+  <div class="container">
+    
+    <!-- Filtros -->
+    <div class="filtros">
+      <button class="filtro-btn ativo" onclick="filtrarCards('todos', this)">🏠 Todos</button>
+      <button class="filtro-btn" onclick="filtrarCards('disponivel', this)">✅ Disponíveis</button>
+      <button class="filtro-btn" onclick="filtrarCards('reservado', this)">🔶 Reservados</button>
+    </div>
+    
+    <!-- Grid de Cards -->
+    <div class="cards-grid" id="cards-container">
+      <!-- Cards serão inseridos via JavaScript -->
+    </div>
+    
+  </div>
+
+  <!-- Modal de Interesse -->
+  <div class="modal-overlay" id="modal-interesse">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>📋 Tenho Interesse</h2>
+        <button class="modal-fechar" onclick="fecharModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grupo">
+          <label class="form-label">Apartamento de interesse</label>
+          <input type="text" id="modal-apto" class="form-input" readonly>
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Seu nome completo *</label>
+          <input type="text" id="modal-nome" class="form-input" placeholder="Digite seu nome">
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Seu telefone (WhatsApp) *</label>
+          <input type="tel" id="modal-telefone" class="form-input" placeholder="(00) 00000-0000">
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Seu e-mail *</label>
+          <input type="email" id="modal-email" class="form-input" placeholder="seu@email.com">
+        </div>
+        <div class="form-grupo">
+          <label class="form-label">Mensagem (opcional)</label>
+          <textarea id="modal-mensagem" class="form-input form-textarea" placeholder="Deixe uma mensagem..."></textarea>
+        </div>
+        <button class="btn-enviar" onclick="enviarInteresse()">
+          ✅ Enviar Interesse
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">Link copiado!</div>
+
+  <!-- Botão Admin -->
+  <button class="btn-admin" id="btn-admin" onclick="toggleAdminMode()">
+    ⚙️ Admin
+  </button>
+
+  <!-- Modal de Edição -->
+  <div class="modal-editar" id="modal-editar">
+    <div class="modal-editar-conteudo">
+      <div class="modal-editar-header">
+        <h3>✏️ Editar Apartamento</h3>
+        <button class="modal-fechar" onclick="fecharModalEditar()">&times;</button>
+      </div>
+      <div class="modal-editar-body">
+        <input type="hidden" id="editar-numero">
+        
+        <div class="form-group">
+          <label>Apartamento</label>
+          <input type="text" id="editar-titulo" readonly style="background:#f5f5f5;">
+        </div>
+        
+        <div class="form-group">
+          <label>💰 Valor do Aluguel (R$)</label>
+          <input type="number" id="editar-valor" placeholder="Ex: 1500" min="0" step="50">
+        </div>
+        
+        <div class="form-group">
+          <label>📋 Status</label>
+          <select id="editar-status">
+            <option value="disponivel">✅ Disponível</option>
+            <option value="ocupado">🔴 Ocupado</option>
+            <option value="reservado">🔶 Reservado</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>📝 Descrição</label>
+          <textarea id="editar-descricao" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;min-height:80px;font-family:inherit;"></textarea>
+        </div>
+        
+        <button class="btn-salvar" onclick="salvarEdicao()">
+          💾 Salvar Alterações
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2026 BASE250 — Residencial Itacorubi</p>
+    <p>Administrado por <a href="mailto:eng.diogoj@gmail.com">Eng. Diogo J.</a></p>
+  </footer>
+
+  <script>
+    // Dados dos apartamentos (serão carregados do Google Sheets quando integrado)
+    // linkForms: URL do Google Forms para cadastro de interesse (para integração futura)
+    let apartamentos = [
+      {
+        numero: '101',
+        titulo: 'Apartamento 101 - Térreo',
+        descricao: 'Apartamento mobiliado, com 1 quarto, sala, cozinha americana, banheiro. Área de serviço compartilhada. Inclui água e internet.',
+        valor: 1500,
+        status: 'disponivel',
+        caracteristicas: ['1 Quarto', 'Mobiliado', 'Wi-Fi incluso'],
+        imagem: '',
+        linkForms: 'https://forms.gle/XXXXXXXXX'
+      },
+      {
+        numero: '102',
+        titulo: 'Apartamento 102 - Térreo',
+        descricao: 'Apartamento mobiliado, com 1 quarto, sala, cozinha americana, banheiro. Área de serviço compartilhada. Incluso água e internet.',
+        valor: 1600,
+        status: 'ocupado',
+        caracteristicas: ['1 Quarto', 'Mobiliado', 'Wi-Fi incluso'],
+        imagem: '',
+        linkForms: 'https://forms.gle/XXXXXXXXX'
+      },
+      {
+        numero: '103',
+        titulo: 'Apartamento 103 - Térreo',
+        descricao: 'Apartamento mobiliado, com 1 quarto amplo, sala integrada, cozinha americana, banheiro. Área de serviço compartilhada.',
+        valor: 1700,
+        status: 'disponivel',
+        caracteristicas: ['1 Quarto', 'Mobiliado', 'Wi-Fi incluso'],
+        imagem: '',
+        linkForms: 'https://forms.gle/XXXXXXXXX'
+      },
+      {
+        numero: '201',
+        titulo: 'Apartamento 201 - 1º Andar',
+        descricao: 'Apartamento mobiliado no 1º andar, com 1 quarto, sala, cozinha americana, banheiro e varanda. Vista privilegiada.',
+        valor: 1800,
+        status: 'reservado',
+        caracteristicas: ['1 Quarto', 'Varanda', 'Vista'],
+        imagem: '',
+        linkForms: 'https://forms.gle/XXXXXXXXX'
+      },
+      {
+        numero: '202',
+        titulo: 'Apartamento 202 - 1º Andar',
+        descricao: 'Apartamento mobiliado no 1º andar, com 1 quarto, sala espaçosa, cozinha americana equipada, banheiro e varanda.',
+        valor: 1900,
+        status: 'disponivel',
+        caracteristicas: ['1 Quarto', 'Varanda', 'Ar-condicionado'],
+        imagem: '',
+        linkForms: 'https://forms.gle/XXXXXXXXX'
+      }
+    ];
+
+    // Carregar dados do localStorage se existirem
+    function carregarDadosSalvos() {
+      const dados = localStorage.getItem('base250_apartamentos');
+      if (dados) {
+        const salvos = JSON.parse(dados);
+        // Mesclar dados salvos com os originais
+        apartamentos = apartamentos.map(apto => {
+          const salvo = salvos.find(s => s.numero === apto.numero);
+          if (salvo) {
+            return { ...apto, ...salvo };
+          }
+          return apto;
+        });
+      }
+    }
+
+    // Salvar dados no localStorage
+    function salvarDados() {
+      const dadosParaSalvar = apartamentos.map(a => ({
+        numero: a.numero,
+        valor: a.valor,
+        status: a.status,
+        descricao: a.descricao
+      }));
+      localStorage.setItem('base250_apartamentos', JSON.stringify(dadosParaSalvar));
+    }
+
+    // Modo Admin
+    let adminMode = false;
+
+    function toggleAdminMode() {
+      adminMode = !adminMode;
+      const btn = document.getElementById('btn-admin');
+      const container = document.querySelector('.container');
+      
+      if (adminMode) {
+        btn.textContent = '🔓 Sair do Admin';
+        btn.classList.add('ativo');
+        container.classList.add('admin-mode');
+        mostrarToast('🔓 Modo Admin ativado! Clique em ✏️ para editar.');
+      } else {
+        btn.textContent = '⚙️ Admin';
+        btn.classList.remove('ativo');
+        container.classList.remove('admin-mode');
+        mostrarToast('🔒 Modo Admin desativado');
+      }
+    }
+
+    // Abrir modal de edição
+    function abrirModalEditar(numero) {
+      const apto = apartamentos.find(a => a.numero === numero);
+      if (!apto) return;
+      
+      document.getElementById('editar-numero').value = apto.numero;
+      document.getElementById('editar-titulo').value = apto.titulo;
+      document.getElementById('editar-valor').value = apto.valor;
+      document.getElementById('editar-status').value = apto.status;
+      document.getElementById('editar-descricao').value = apto.descricao;
+      
+      document.getElementById('modal-editar').classList.add('ativo');
+    }
+
+    // Fechar modal de edição
+    function fecharModalEditar() {
+      document.getElementById('modal-editar').classList.remove('ativo');
+    }
+
+    // Salvar edição
+    function salvarEdicao() {
+      const numero = document.getElementById('editar-numero').value;
+      const valor = parseFloat(document.getElementById('editar-valor').value);
+      const status = document.getElementById('editar-status').value;
+      const descricao = document.getElementById('editar-descricao').value;
+      
+      // Encontrar e atualizar o apartamento
+      const idx = apartamentos.findIndex(a => a.numero === numero);
+      if (idx !== -1) {
+        apartamentos[idx].valor = valor;
+        apartamentos[idx].status = status;
+        apartamentos[idx].descricao = descricao;
+        
+        // Salvar no localStorage
+        salvarDados();
+        
+        // Re-renderizar
+        renderizarCards(apartamentos);
+        
+        // Fechar modal
+        fecharModalEditar();
+        
+        mostrarToast(`✅ Apartamento ${numero} atualizado!`);
+      }
+    }
+
+    // Renderizar cards
+    function renderizarCards(lista) {
+      const container = document.getElementById('cards-container');
+      
+      if (lista.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:#666;grid-column:1/-1;">Nenhum apartamento encontrado.</p>';
+        return;
+      }
+      
+      let html = '';
+      lista.forEach(apto => {
+        const statusBadge = getStatusBadge(apto.status);
+        const valorFormatado = apto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        
+        html += `
+          <div class="apto-card" data-status="${apto.status}" id="card-${apto.numero}">
+            <div class="card-imagem">
+              <button class="btn-editar-card" onclick="event.stopPropagation(); abrirModalEditar('${apto.numero}')">✏️ Editar</button>
+              ${apto.imagem 
+                ? `<img src="${apto.imagem}" alt="Apartamento ${apto.numero}">`
+                : `<div class="card-imagem-placeholder">🏠<span>Apartamento ${apto.numero}</span></div>`
+              }
+              <span class="card-badge ${statusBadge.classe}">${statusBadge.texto}</span>
+              <span class="card-numero">Apto ${apto.numero}</span>
+            </div>
+            
+            <div class="card-conteudo">
+              <h3 class="card-titulo">${apto.titulo}</h3>
+              <p class="card-descricao">${apto.descricao}</p>
+              
+              <div class="card-caracteristicas">
+                ${apto.caracteristicas.map(c => `
+                  <span class="caracteristica">
+                    <span class="caracteristica-icon">✓</span>
+                    ${c}
+                  </span>
+                `).join('')}
+              </div>
+              
+              <div class="card-preco">
+                <span class="preco-label">Aluguel</span>
+                <span class="preco-valor">${valorFormatado}</span>
+                <span class="preco-periodo">/mês</span>
+              </div>
+              
+              <div class="card-acoes">
+                ${apto.status === 'disponivel' ? `
+                  <button class="btn btn-interesse" onclick="abrirModal('${apto.numero}', '${apto.titulo}')">
+                    📋 Tenho Interesse
+                  </button>
+                ` : ''}
+                <button class="btn btn-whatsapp" onclick="compartilharWhatsApp('${apto.numero}')">
+                  📲 WhatsApp
+                </button>
+                <button class="btn btn-copiar" onclick="copiarLink('${apto.numero}')">
+                  🔗 Copiar Link
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    // Status badge
+    function getStatusBadge(status) {
+      switch(status) {
+        case 'disponivel':
+          return { texto: '✅ Disponível', classe: 'badge-disponivel' };
+        case 'ocupado':
+          return { texto: '🔴 Ocupado', classe: 'badge-ocupado' };
+        case 'reservado':
+          return { texto: '🔶 Reservado', classe: 'badge-reservado' };
+        default:
+          return { texto: status, classe: '' };
+      }
+    }
+
+    // Filtrar cards
+    function filtrarCards(filtro, btn) {
+      // Atualizar botões
+      document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+      if (btn) btn.classList.add('ativo');
+      
+      // Filtrar
+      let lista = apartamentos;
+      if (filtro !== 'todos') {
+        lista = apartamentos.filter(a => a.status === filtro);
+      }
+      
+      renderizarCards(lista);
+    }
+
+    // Abrir modal de interesse
+    function abrirModal(numero, titulo) {
+      document.getElementById('modal-apto').value = `${numero} - ${titulo}`;
+      document.getElementById('modal-interesse').classList.add('ativo');
+    }
+
+    // Fechar modal
+    function fecharModal() {
+      document.getElementById('modal-interesse').classList.remove('ativo');
+      // Limpar campos
+      document.getElementById('modal-nome').value = '';
+      document.getElementById('modal-telefone').value = '';
+      document.getElementById('modal-email').value = '';
+      document.getElementById('modal-mensagem').value = '';
+    }
+
+    // Enviar interesse
+    function enviarInteresse() {
+      const apto = document.getElementById('modal-apto').value;
+      const nome = document.getElementById('modal-nome').value;
+      const telefone = document.getElementById('modal-telefone').value;
+      const email = document.getElementById('modal-email').value;
+      const mensagem = document.getElementById('modal-mensagem').value;
+      
+      if (!nome || !telefone || !email) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+      }
+      
+      // Montar mensagem para WhatsApp
+      const textoWhats = `🏠 *INTERESSE EM APARTAMENTO*%0A%0A` +
+        `📍 *Apartamento:* ${apto}%0A` +
+        `👤 *Nome:* ${nome}%0A` +
+        `📱 *Telefone:* ${telefone}%0A` +
+        `📧 *E-mail:* ${email}%0A` +
+        `${mensagem ? `💬 *Mensagem:* ${mensagem}%0A` : ''}` +
+        `%0A_Enviado via BASE250_`;
+      
+      // Abrir WhatsApp (número do proprietário)
+      const numeroProprietario = '5548999352627';
+      window.open(`https://wa.me/${numeroProprietario}?text=${textoWhats}`, '_blank');
+      
+      mostrarToast('✅ Abrindo WhatsApp...');
+      fecharModal();
+    }
+
+    // Compartilhar via WhatsApp
+    function compartilharWhatsApp(numero) {
+      const apto = apartamentos.find(a => a.numero === numero);
+      if (!apto) return;
+      
+      const valorFormatado = apto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const link = `${window.location.origin}${window.location.pathname}#card-${numero}`;
+      
+      const texto = `🏢 *BASE250 - Apartamento ${numero}*%0A%0A` +
+        `${apto.titulo}%0A%0A` +
+        `📝 ${apto.descricao}%0A%0A` +
+        `💰 *Valor: ${valorFormatado}/mês*%0A%0A` +
+        `✨ Características:%0A${apto.caracteristicas.map(c => `• ${c}`).join('%0A')}%0A%0A` +
+        `🔗 Veja mais: ${link}%0A%0A` +
+        `📞 Contato: (48) 99935-2627`;
+      
+      window.open(`https://wa.me/?text=${texto}`, '_blank');
+    }
+
+    // Copiar link
+    function copiarLink(numero) {
+      const link = `${window.location.origin}${window.location.pathname}#card-${numero}`;
+      
+      navigator.clipboard.writeText(link).then(() => {
+        mostrarToast('🔗 Link copiado para a área de transferência!');
+      }).catch(() => {
+        // Fallback para navegadores antigos
+        const input = document.createElement('input');
+        input.value = link;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        mostrarToast('🔗 Link copiado!');
+      });
+    }
+
+    // Mostrar toast
+    function mostrarToast(mensagem) {
+      const toast = document.getElementById('toast');
+      toast.textContent = mensagem;
+      toast.classList.add('mostrar');
+      
+      setTimeout(() => {
+        toast.classList.remove('mostrar');
+      }, 3000);
+    }
+
+    // Scroll para card se houver hash na URL
+    function scrollParaCard() {
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#card-')) {
+        const card = document.querySelector(hash);
+        if (card) {
+          setTimeout(() => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.style.animation = 'pulse 0.5s ease';
+          }, 500);
+        }
+      }
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarDadosSalvos();
+      renderizarCards(apartamentos);
+      scrollParaCard();
+    });
+
+    // Listener para mudança de hash
+    window.addEventListener('hashchange', scrollParaCard);
+  </script>
+
+</body>
+</html>

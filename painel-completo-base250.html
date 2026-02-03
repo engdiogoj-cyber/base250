@@ -259,6 +259,156 @@
       to { transform: rotate(360deg); }
     }
     
+    /* Estilos para Cards de Apartamentos */
+    .apto-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .apto-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      border-color: var(--cor-primaria);
+    }
+    
+    .apto-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+    
+    .apto-numero {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--cor-primaria);
+    }
+    
+    .apto-status {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .apto-status.ocupado {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .apto-status.disponivel {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .apto-status.reservado {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+    
+    .apto-status.manutencao {
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .apto-card-body {
+      margin-bottom: 15px;
+    }
+    
+    .apto-inquilino {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .apto-info {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    .apto-valor {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cor-sucesso);
+      margin-top: 10px;
+    }
+    
+    .apto-card-footer {
+      display: flex;
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+    
+    .apto-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .apto-btn:hover {
+      opacity: 0.85;
+    }
+    
+    .apto-btn-email {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .apto-btn-whats {
+      background: #25d366;
+      color: white;
+    }
+    
+    .apto-btn-pasta {
+      background: #f5f5f5;
+      color: #666;
+    }
+    
+    /* Modal Tabs */
+    .modal-tab {
+      padding: 10px 16px;
+      background: #f5f5f5;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.2s;
+      color: #666;
+    }
+    
+    .modal-tab:hover {
+      background: #e0e0e0;
+    }
+    
+    .modal-tab.ativo {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    .modal-conteudo {
+      animation: fadeIn 0.3s;
+    }
+    
     .tabela {
       width: 100%;
       border-collapse: collapse;
@@ -333,6 +483,7 @@
     <!-- ABAS -->
     <div class="tabs">
       <button class="tab ativo" onclick="mudarAba('fluxo')">📊 Fluxo Etapas</button>
+      <button class="tab" onclick="mudarAba('apartamentos')">🏢 Apartamentos</button>
       <button class="tab" onclick="mudarAba('buscar')">🔍 Buscar Apto</button>
       <button class="tab" onclick="mudarAba('emails')">📧 E-mails</button>
       <button class="tab" onclick="mudarAba('whatsapp')">📲 WhatsApp</button>
@@ -374,6 +525,183 @@
         </div>
         
         <div id="resultado-fluxo" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+    
+    <!-- ========== ABA 2: APARTAMENTOS (CARDS) ========== -->
+    <div id="aba-apartamentos" class="conteudo-tab">
+      <div class="card">
+        <div class="card-titulo">🏢 Painel de Apartamentos</div>
+        
+        <div class="info-box info">
+          Visualize todos os apartamentos com status e ações rápidas. Clique em um card para abrir o painel de gestão.
+        </div>
+        
+        <div class="btn-grupo" style="margin-bottom: 20px;">
+          <button class="btn btn-primario" onclick="carregarApartamentos()">
+            🔄 Atualizar Lista
+          </button>
+          <button class="btn btn-sucesso" onclick="filtrarApartamentos('todos')">
+            📋 Todos
+          </button>
+          <button class="btn" onclick="filtrarApartamentos('ocupado')" style="background:#388e3c;color:white;">
+            🟢 Ocupados
+          </button>
+          <button class="btn" onclick="filtrarApartamentos('disponivel')" style="background:#f57c00;color:white;">
+            🟡 Disponíveis
+          </button>
+        </div>
+        
+        <div id="grid-apartamentos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+          <!-- Cards serão gerados dinamicamente -->
+          <div class="info-box carregando">
+            <div class="spinner"></div> Carregando apartamentos...
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal de Gestão do Apartamento -->
+      <div id="modal-apartamento" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto;">
+        <div style="max-width: 800px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+          <div style="background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); color: white; padding: 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h2 id="modal-titulo" style="margin: 0; font-size: 20px;">🏢 Apartamento</h2>
+            <button onclick="fecharModalApartamento()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
+          </div>
+          
+          <div style="padding: 25px;">
+            <!-- Informações do Apartamento -->
+            <div id="modal-info" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <!-- Dados carregados dinamicamente -->
+            </div>
+            
+            <!-- Abas de Ações -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+              <button class="modal-tab ativo" onclick="mudarModalTab('editar')">📝 Editar</button>
+              <button class="modal-tab" onclick="mudarModalTab('email')">📧 E-mail</button>
+              <button class="modal-tab" onclick="mudarModalTab('whatsapp')">📲 WhatsApp</button>
+              <button class="modal-tab" onclick="mudarModalTab('documentos')">📄 Documentos</button>
+              <button class="modal-tab" onclick="mudarModalTab('encerrar')">🔚 Encerrar</button>
+            </div>
+            
+            <!-- Conteúdo: Editar -->
+            <div id="modal-editar" class="modal-conteudo ativo">
+              <div class="form-grid">
+                <div class="form-grupo">
+                  <label class="form-label">Inquilino</label>
+                  <input type="text" id="modal-inquilino" class="form-input" placeholder="Nome do inquilino">
+                </div>
+                <div class="form-grupo">
+                  <label class="form-label">Valor Aluguel (R$)</label>
+                  <input type="number" id="modal-valor" class="form-input" placeholder="Ex: 1500">
+                </div>
+                <div class="form-grupo">
+                  <label class="form-label">Data Entrada</label>
+                  <input type="date" id="modal-data-entrada" class="form-input">
+                </div>
+                <div class="form-grupo">
+                  <label class="form-label">Prazo (Meses)</label>
+                  <input type="number" id="modal-prazo" class="form-input" placeholder="Ex: 12">
+                </div>
+                <div class="form-grupo span-2">
+                  <label class="form-label">Status</label>
+                  <select id="modal-status" class="form-select">
+                    <option value="Disponível">🟡 Disponível</option>
+                    <option value="Ocupado">🟢 Ocupado</option>
+                    <option value="Reservado">🔵 Reservado</option>
+                    <option value="Manutenção">🔴 Manutenção</option>
+                  </select>
+                </div>
+              </div>
+              <div class="btn-grupo">
+                <button class="btn btn-sucesso" onclick="salvarDadosApartamento()">
+                  💾 Salvar Alterações
+                </button>
+              </div>
+              <div id="resultado-modal-editar" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- Conteúdo: E-mail -->
+            <div id="modal-email" class="modal-conteudo" style="display: none;">
+              <div class="form-grupo" style="margin-bottom: 15px;">
+                <label class="form-label">Tipo de E-mail</label>
+                <select id="modal-tipo-email" class="form-select">
+                  <option value="1">📄 Contrato p/ Assinatura</option>
+                  <option value="2">✅ Confirmação Assinado</option>
+                  <option value="3">🏢 Boas-vindas</option>
+                  <option value="4">📄 Contrato Final</option>
+                  <option value="5">🧾 Declaração</option>
+                </select>
+              </div>
+              <div class="btn-grupo">
+                <button class="btn btn-primario" onclick="enviarEmailModal()">
+                  ✉️ Enviar E-mail
+                </button>
+              </div>
+              <div id="resultado-modal-email" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- Conteúdo: WhatsApp -->
+            <div id="modal-whatsapp" class="modal-conteudo" style="display: none;">
+              <div class="form-grupo" style="margin-bottom: 15px;">
+                <label class="form-label">Tipo de Mensagem</label>
+                <select id="modal-tipo-whats" class="form-select">
+                  <option value="contrato">📄 Contrato Enviado</option>
+                  <option value="assinado">✅ Contrato Assinado</option>
+                  <option value="boasvindas">🏢 Boas-vindas</option>
+                  <option value="declaracao">🧾 Declaração</option>
+                </select>
+              </div>
+              <div class="btn-grupo">
+                <button class="btn btn-primario" onclick="gerarWhatsAppModal()">
+                  📲 Gerar Mensagem
+                </button>
+              </div>
+              <div id="resultado-modal-whatsapp" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- Conteúdo: Documentos -->
+            <div id="modal-documentos" class="modal-conteudo" style="display: none;">
+              <div class="info-box info">
+                Acesse a pasta do apartamento no Google Drive ou gere documentos.
+              </div>
+              <div class="btn-grupo">
+                <button class="btn btn-primario" onclick="abrirPastaModal()">
+                  📁 Abrir Pasta Drive
+                </button>
+                <button class="btn btn-sucesso" onclick="gerarContratoModal()">
+                  📄 Gerar Contrato
+                </button>
+                <button class="btn" style="background:#9c27b0;color:white;" onclick="gerarDeclaracaoModal()">
+                  🧾 Gerar Declaração
+                </button>
+              </div>
+              <div id="resultado-modal-documentos" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- Conteúdo: Encerrar -->
+            <div id="modal-encerrar" class="modal-conteudo" style="display: none;">
+              <div class="info-box alerta">
+                ⚠️ Ao encerrar, os dados serão movidos para a aba "Saídas" e o apartamento ficará disponível.
+              </div>
+              <div class="form-grid">
+                <div class="form-grupo">
+                  <label class="form-label">Data de Saída</label>
+                  <input type="text" id="modal-data-saida" class="form-input" placeholder="dd/mm/yyyy">
+                </div>
+                <div class="form-grupo span-2">
+                  <label class="form-label">Observação</label>
+                  <textarea id="modal-obs-saida" class="form-textarea" style="height: 80px;" placeholder="Ex: Sem pendências"></textarea>
+                </div>
+              </div>
+              <div class="btn-grupo">
+                <button class="btn btn-perigo" onclick="encerrarContratoModal()">
+                  🔚 Encerrar Contrato
+                </button>
+              </div>
+              <div id="resultado-modal-encerrar" style="margin-top: 15px;"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -807,6 +1135,394 @@
         })
         .encerrarContratoIntegrado(apto, data, obs);
     }
+    
+    // ========== FUNÇÕES DOS APARTAMENTOS ==========
+    
+    let apartamentoSelecionado = null;
+    let listaApartamentos = [];
+    
+    function carregarApartamentos() {
+      const grid = document.getElementById('grid-apartamentos');
+      grid.innerHTML = `<div class="info-box carregando"><div class="spinner"></div> Carregando apartamentos...</div>`;
+      
+      google.script.run
+        .withSuccessHandler(function(apartamentos) {
+          listaApartamentos = apartamentos || [];
+          renderizarCards(listaApartamentos);
+        })
+        .withFailureHandler(function(erro) {
+          grid.innerHTML = `<div class="info-box erro">❌ Erro ao carregar: ${erro}</div>`;
+        })
+        .listarApartamentosParaDashboard();
+    }
+    
+    function renderizarCards(apartamentos) {
+      const grid = document.getElementById('grid-apartamentos');
+      
+      if (!apartamentos || apartamentos.length === 0) {
+        grid.innerHTML = `<div class="info-box alerta">Nenhum apartamento encontrado na planilha.</div>`;
+        return;
+      }
+      
+      let html = '';
+      apartamentos.forEach(apto => {
+        const statusClass = getStatusClass(apto.status);
+        const statusTexto = apto.status || 'Disponível';
+        const valorFormatado = apto.valor ? `R$ ${Number(apto.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : '-';
+        
+        html += `
+          <div class="apto-card" onclick="abrirModalApartamento('${apto.apto}')" data-status="${statusClass}">
+            <div class="apto-card-header">
+              <div class="apto-numero">🏢 ${apto.apto}</div>
+              <span class="apto-status ${statusClass}">${statusTexto}</span>
+            </div>
+            <div class="apto-card-body">
+              <div class="apto-inquilino">${apto.inquilino || '(Disponível)'}</div>
+              <div class="apto-info">📅 Entrada: ${apto.dataEntrada || '-'}</div>
+              <div class="apto-info">⏱️ Prazo: ${apto.prazoMeses ? apto.prazoMeses + ' meses' : '-'}</div>
+              <div class="apto-valor">${valorFormatado}</div>
+            </div>
+            <div class="apto-card-footer">
+              <button class="apto-btn apto-btn-email" onclick="event.stopPropagation(); abrirModalComAba('${apto.apto}', 'email')">📧</button>
+              <button class="apto-btn apto-btn-whats" onclick="event.stopPropagation(); abrirModalComAba('${apto.apto}', 'whatsapp')">📲</button>
+              <button class="apto-btn apto-btn-pasta" onclick="event.stopPropagation(); abrirPastaDireta('${apto.apto}')">📁</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      grid.innerHTML = html;
+    }
+    
+    function getStatusClass(status) {
+      if (!status) return 'disponivel';
+      const s = status.toLowerCase();
+      if (s.includes('ocupado')) return 'ocupado';
+      if (s.includes('reservado')) return 'reservado';
+      if (s.includes('manutenção') || s.includes('manutencao')) return 'manutencao';
+      return 'disponivel';
+    }
+    
+    function filtrarApartamentos(filtro) {
+      if (filtro === 'todos') {
+        renderizarCards(listaApartamentos);
+        return;
+      }
+      
+      const filtrados = listaApartamentos.filter(apto => {
+        const statusClass = getStatusClass(apto.status);
+        if (filtro === 'ocupado') return statusClass === 'ocupado';
+        if (filtro === 'disponivel') return statusClass === 'disponivel';
+        return true;
+      });
+      
+      renderizarCards(filtrados);
+    }
+    
+    function abrirModalApartamento(aptoNumero) {
+      apartamentoSelecionado = aptoNumero;
+      document.getElementById('modal-titulo').textContent = `🏢 Apartamento ${aptoNumero}`;
+      document.getElementById('modal-apartamento').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      
+      // Resetar abas
+      mudarModalTab('editar');
+      
+      // Carregar dados do apartamento
+      carregarDadosModal(aptoNumero);
+    }
+    
+    function abrirModalComAba(aptoNumero, aba) {
+      abrirModalApartamento(aptoNumero);
+      setTimeout(() => mudarModalTab(aba), 100);
+    }
+    
+    function fecharModalApartamento() {
+      document.getElementById('modal-apartamento').style.display = 'none';
+      document.body.style.overflow = 'auto';
+      apartamentoSelecionado = null;
+      
+      // Limpar resultados
+      ['resultado-modal-editar', 'resultado-modal-email', 'resultado-modal-whatsapp', 'resultado-modal-documentos', 'resultado-modal-encerrar'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+      });
+    }
+    
+    function carregarDadosModal(aptoNumero) {
+      const infoDiv = document.getElementById('modal-info');
+      infoDiv.innerHTML = `<div class="spinner"></div> Carregando...`;
+      
+      google.script.run
+        .withSuccessHandler(function(dados) {
+          if (dados) {
+            // Preencher info resumida
+            infoDiv.innerHTML = `
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                <div><strong>🏢 Apto:</strong> ${dados.apto}</div>
+                <div><strong>👤 Inquilino:</strong> ${dados.inquilino || '-'}</div>
+                <div><strong>💰 Valor:</strong> R$ ${dados.valor || '-'}</div>
+                <div><strong>📅 Entrada:</strong> ${dados.dataEntrada || '-'}</div>
+                <div><strong>📧 Email:</strong> ${dados.email || '-'}</div>
+                <div><strong>📱 Telefone:</strong> ${dados.telefone || '-'}</div>
+              </div>
+            `;
+            
+            // Preencher formulário de edição
+            document.getElementById('modal-inquilino').value = dados.inquilino || '';
+            document.getElementById('modal-valor').value = dados.valor || '';
+            document.getElementById('modal-prazo').value = dados.prazoMeses || '';
+            
+            // Formatar data para input date
+            if (dados.dataEntrada) {
+              const partes = dados.dataEntrada.split('/');
+              if (partes.length === 3) {
+                document.getElementById('modal-data-entrada').value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+              }
+            }
+            
+            // Status
+            const selectStatus = document.getElementById('modal-status');
+            if (dados.status) {
+              for (let i = 0; i < selectStatus.options.length; i++) {
+                if (selectStatus.options[i].value.toLowerCase() === dados.status.toLowerCase()) {
+                  selectStatus.selectedIndex = i;
+                  break;
+                }
+              }
+            }
+          } else {
+            infoDiv.innerHTML = `<div class="info-box alerta">Apartamento não encontrado.</div>`;
+          }
+        })
+        .withFailureHandler(function(erro) {
+          infoDiv.innerHTML = `<div class="info-box erro">❌ Erro: ${erro}</div>`;
+        })
+        .buscarApartamento(aptoNumero);
+    }
+    
+    function mudarModalTab(tab) {
+      // Esconder todos os conteúdos
+      document.querySelectorAll('.modal-conteudo').forEach(el => {
+        el.style.display = 'none';
+        el.classList.remove('ativo');
+      });
+      
+      // Mostrar tab selecionada
+      const conteudo = document.getElementById(`modal-${tab}`);
+      if (conteudo) {
+        conteudo.style.display = 'block';
+        conteudo.classList.add('ativo');
+      }
+      
+      // Atualizar botões
+      document.querySelectorAll('.modal-tab').forEach(btn => {
+        btn.classList.remove('ativo');
+      });
+      event.target.classList.add('ativo');
+    }
+    
+    function salvarDadosApartamento() {
+      if (!apartamentoSelecionado) return;
+      
+      const dados = {
+        apto: apartamentoSelecionado,
+        inquilino: document.getElementById('modal-inquilino').value,
+        valor: document.getElementById('modal-valor').value,
+        dataEntrada: document.getElementById('modal-data-entrada').value,
+        prazoMeses: document.getElementById('modal-prazo').value
+      };
+      
+      const novoStatus = document.getElementById('modal-status').value;
+      
+      mostrarResultado('resultado-modal-editar', '<div class="spinner"></div> Salvando...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            mostrarResultado('resultado-modal-editar', '✅ Dados salvos com sucesso!', 'sucesso');
+            // Atualizar status separadamente
+            google.script.run.atualizarStatusApartamento(apartamentoSelecionado, novoStatus);
+            // Recarregar lista
+            setTimeout(carregarApartamentos, 1000);
+          } else {
+            mostrarResultado('resultado-modal-editar', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-modal-editar', `❌ Erro: ${erro}`, 'erro');
+        })
+        .criarOuAtualizarContratoDashboard(dados);
+    }
+    
+    function enviarEmailModal() {
+      if (!apartamentoSelecionado) return;
+      
+      const tipo = document.getElementById('modal-tipo-email').value;
+      
+      mostrarResultado('resultado-modal-email', '<div class="spinner"></div> Enviando e-mail...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            mostrarResultado('resultado-modal-email', `✅ E-mail enviado para ${resultado.email}!`, 'sucesso');
+          } else {
+            mostrarResultado('resultado-modal-email', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-modal-email', `❌ Erro: ${erro}`, 'erro');
+        })
+        .enviarEmailIntegrado(tipo, apartamentoSelecionado);
+    }
+    
+    function gerarWhatsAppModal() {
+      if (!apartamentoSelecionado) return;
+      
+      const tipo = document.getElementById('modal-tipo-whats').value;
+      
+      mostrarResultado('resultado-modal-whatsapp', '<div class="spinner"></div> Gerando mensagem...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            const mensagem = resultado.mensagem;
+            document.getElementById('resultado-modal-whatsapp').innerHTML = `
+              <div class="whatsapp-box">${mensagem}</div>
+              <div class="btn-grupo" style="margin-top: 10px;">
+                <button class="btn btn-primario" onclick="copiarWhatsApp(\`${mensagem.replace(/`/g, '\\`')}\`)">📋 Copiar</button>
+                <button class="btn btn-sucesso" onclick="window.open('https://wa.me/?text=' + encodeURIComponent(\`${mensagem.replace(/`/g, '\\`')}\`), '_blank')">📲 Abrir WhatsApp</button>
+              </div>
+            `;
+          } else {
+            mostrarResultado('resultado-modal-whatsapp', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-modal-whatsapp', `❌ Erro: ${erro}`, 'erro');
+        })
+        .gerarMensagemWhatsApp(tipo, apartamentoSelecionado);
+    }
+    
+    function abrirPastaModal() {
+      if (!apartamentoSelecionado) return;
+      abrirPastaDireta(apartamentoSelecionado);
+    }
+    
+    function abrirPastaDireta(aptoNumero) {
+      google.script.run
+        .withSuccessHandler(function(link) {
+          if (link) {
+            window.open(link, '_blank');
+          } else {
+            alert('Pasta não encontrada para este apartamento.');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          alert('Erro ao abrir pasta: ' + erro);
+        })
+        .abrirPastaDoApartamento(aptoNumero);
+    }
+    
+    function gerarContratoModal() {
+      if (!apartamentoSelecionado) return;
+      
+      mostrarResultado('resultado-modal-documentos', '<div class="spinner"></div> Gerando contrato...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado && resultado.sucesso) {
+            mostrarResultado('resultado-modal-documentos', '✅ Contrato gerado com sucesso!', 'sucesso');
+          } else {
+            mostrarResultado('resultado-modal-documentos', `❌ ${resultado ? resultado.erro : 'Erro desconhecido'}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-modal-documentos', `❌ Erro: ${erro}`, 'erro');
+        })
+        .gerarContratoDashboard(apartamentoSelecionado);
+    }
+    
+    function gerarDeclaracaoModal() {
+      if (!apartamentoSelecionado) return;
+      
+      mostrarResultado('resultado-modal-documentos', '<div class="spinner"></div> Gerando declaração...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado && resultado.sucesso) {
+            mostrarResultado('resultado-modal-documentos', '✅ Declaração gerada com sucesso!', 'sucesso');
+          } else {
+            mostrarResultado('resultado-modal-documentos', `❌ ${resultado ? resultado.erro : 'Erro desconhecido'}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-modal-documentos', `❌ Erro: ${erro}`, 'erro');
+        })
+        .gerarDeclaracaoDashboard(apartamentoSelecionado);
+    }
+    
+    function encerrarContratoModal() {
+      if (!apartamentoSelecionado) return;
+      
+      const data = document.getElementById('modal-data-saida').value;
+      const obs = document.getElementById('modal-obs-saida').value;
+      
+      if (!data) {
+        mostrarResultado('resultado-modal-encerrar', 'Informe a data de saída!', 'erro');
+        return;
+      }
+      
+      if (!confirm(`Confirma encerramento do contrato do Apto ${apartamentoSelecionado}?`)) {
+        return;
+      }
+      
+      mostrarResultado('resultado-modal-encerrar', '<div class="spinner"></div> Encerrando contrato...', 'carregando');
+      
+      google.script.run
+        .withSuccessHandler(function(resultado) {
+          if (resultado.sucesso) {
+            mostrarResultado('resultado-modal-encerrar', '✅ Contrato encerrado com sucesso!', 'sucesso');
+            setTimeout(() => {
+              fecharModalApartamento();
+              carregarApartamentos();
+            }, 2000);
+          } else {
+            mostrarResultado('resultado-modal-encerrar', `❌ ${resultado.erro}`, 'erro');
+          }
+        })
+        .withFailureHandler(function(erro) {
+          mostrarResultado('resultado-modal-encerrar', `❌ Erro: ${erro}`, 'erro');
+        })
+        .encerrarContratoIntegrado(apartamentoSelecionado, data, obs);
+    }
+    
+    // Carregar apartamentos quando a aba for aberta
+    document.addEventListener('DOMContentLoaded', function() {
+      // Carrega se já estiver na aba apartamentos
+      const abaAptos = document.getElementById('aba-apartamentos');
+      if (abaAptos && abaAptos.classList.contains('ativo')) {
+        carregarApartamentos();
+      }
+    });
+    
+    // Override da função mudarAba para carregar apartamentos
+    const mudarAbaOriginal = mudarAba;
+    mudarAba = function(nomeAba) {
+      document.querySelectorAll('.conteudo-tab').forEach(tab => {
+        tab.classList.remove('ativo');
+      });
+      document.getElementById(`aba-${nomeAba}`).classList.add('ativo');
+      
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.classList.remove('ativo');
+      });
+      event.target.classList.add('ativo');
+      
+      // Carregar apartamentos quando mudar para a aba
+      if (nomeAba === 'apartamentos') {
+        carregarApartamentos();
+      }
+    };
     
     function mostrarResultado(elementId, mensagem, tipo) {
       document.getElementById(elementId).innerHTML = 
