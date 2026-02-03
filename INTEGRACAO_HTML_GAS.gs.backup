@@ -4756,6 +4756,351 @@ function registrarAuditoriaEnvio(apto, inquilino, tipo) {
   aba.appendRow([new Date(), apto, inquilino, tipo]);
 }
 
+// -----------------------------------------------------
+// OBTER LOGO COMO BLOB (CID)
+// -----------------------------------------------------
+function getLogoBlob() {
+  try {
+    const logoFile = DriveApp.getFileById(CONFIG_EMAIL.logoId);
+    return logoFile.getBlob().setName('logoBASE250');
+  } catch (e) {
+    Logger.log('⚠️ Logo não encontrada: ' + e.message);
+    return null;
+  }
+}
+
+
+// -----------------------------------------------------
+// OBTER DADOS DO CONTRATO
+// -----------------------------------------------------
+function obterDadosContrato(apto) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const aba = ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+  const dados = aba.getDataRange().getValues();
+
+  for (let i = 1; i < dados.length; i++) {
+    if ((dados[i][0] || '').toString().includes(apto)) {
+      return {
+        apto: dados[i][0],
+        nome: dados[i][1],
+        linkPasta: dados[i][8],
+        email: dados[i][21],
+        telefone: dados[i][20],
+        docFoto: dados[i][6],
+        docId: dados[i][7],
+        celescUC: dados[i][23]
+      };
+    }
+  }
+  return null;
+}
+
+
+// -----------------------------------------------------
+// LOCALIZAR PDF NA PASTA
+// -----------------------------------------------------
+function localizarPdf(linkPasta, prefixo) {
+  if (!linkPasta) return null;
+
+  try {
+    const pastaId = linkPasta.split('/folders/')[1].split('?')[0];
+    const pasta = DriveApp.getFolderById(pastaId);
+    const arquivos = pasta.getFiles();
+
+    while (arquivos.hasNext()) {
+      const arq = arquivos.next();
+      const nome = arq.getName();
+
+      if (nome.includes(prefixo) && nome.endsWith('.pdf')) {
+        return arq.getBlob();
+      }
+    }
+  } catch (e) {
+    Logger.log('Erro ao localizar PDF: ' + e.message);
+  }
+
+  return null;
+}
+
+
+// -----------------------------------------------------
+// MENU → E-MAIL 1 | CONTRATO P/ ASSINATURA
+// -----------------------------------------------------
+function menuEnviarContratoEmail() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('📧 Contrato', 'Digite os 3 dígitos do apartamento:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+
+  const d = obterDadosContrato(r.getResponseText().trim());
+  if (!d || !d.email) {
+    ui.alert('Erro', 'Dados não encontrados.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const pdf = localizarPdf(d.linkPasta, 'CONTRATO_');
+  if (!pdf) {
+    ui.alert('Erro', 'Contrato não encontrado.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const statusDocumentos = montarStatusDocumentos(d);
+  const tpl = emailTemplateContrato({
+    nome: d.nome,
+    apto: d.apto,
+    telefone: d.telefone,
+    statusDocumentos: statusDocumentos
+  });
+
+  const logoBlob = getLogoBlob();
+
+  const emailOptions = {
+    to: d.email,
+    subject: tpl.assunto,
+    htmlBody: tpl.htmlBody,
+    body: tpl.corpo,
+    attachments: [pdf]
+  };
+
+  if (logoBlob) {
+    emailOptions.inlineImages = {
+      logoBASE250: logoBlob
+    };
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  registrarAuditoriaEnvio(d.apto, d.nome, 'EMAIL 1 – CONTRATO');
+  ui.alert('Sucesso', 'Contrato enviado.', ui.ButtonSet.OK);
+}
+
+
+// -----------------------------------------------------
+// MENU → E-MAIL 2 | CONFIRMAÇÃO CONTRATO ASSINADO
+// -----------------------------------------------------
+function menuEnviarContratoAssinadoEmail() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('✅ Confirmação', 'Digite os 3 dígitos do apartamento:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+
+  const d = obterDadosContrato(r.getResponseText().trim());
+  if (!d || !d.email) {
+    ui.alert('Erro', 'Dados não encontrados.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const tpl = emailTemplateConfirmacaoContrato({
+    nome: d.nome,
+    apto: d.apto
+  });
+
+  const logoBlob = getLogoBlob();
+
+  const emailOptions = {
+    to: d.email,
+    subject: tpl.assunto,
+    htmlBody: tpl.htmlBody,
+    body: tpl.corpo
+  };
+
+  if (logoBlob) {
+    emailOptions.inlineImages = {
+      logoBASE250: logoBlob
+    };
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  registrarAuditoriaEnvio(d.apto, d.nome, 'EMAIL 2 – CONFIRMAÇÃO');
+  ui.alert('Sucesso', 'Confirmação enviada.', ui.ButtonSet.OK);
+}
+
+
+// -----------------------------------------------------
+// MENU → E-MAIL 3 | BOAS-VINDAS
+// -----------------------------------------------------
+function menuEnviarBoasVindas() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('🏢 Boas-vindas', 'Digite os 3 dígitos do apartamento:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+
+  const d = obterDadosContrato(r.getResponseText().trim());
+  if (!d || !d.email) {
+    ui.alert('Erro', 'Dados não encontrados.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const tpl = emailTemplateBoasVindas({
+    nome: d.nome,
+    apto: d.apto,
+    celescUC: d.celescUC
+  });
+
+  const logoBlob = getLogoBlob();
+
+  const emailOptions = {
+    to: d.email,
+    subject: tpl.assunto,
+    htmlBody: tpl.htmlBody,
+    body: tpl.corpo
+  };
+
+  if (logoBlob) {
+    emailOptions.inlineImages = {
+      logoBASE250: logoBlob
+    };
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  registrarAuditoriaEnvio(d.apto, d.nome, 'EMAIL 3 – BOAS-VINDAS');
+  ui.alert('Sucesso', 'Boas-vindas enviadas.', ui.ButtonSet.OK);
+}
+
+
+// -----------------------------------------------------
+// MENU → E-MAIL 4 | CONTRATO FINAL
+// -----------------------------------------------------
+function menuEnviarContratoFinalEmail() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('📄 Contrato Final', 'Digite os 3 dígitos do apartamento:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+
+  const d = obterDadosContrato(r.getResponseText().trim());
+  if (!d || !d.email) {
+    ui.alert('Erro', 'Dados não encontrados.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const pdf = localizarPdf(d.linkPasta, 'CONTRATO_ASS');
+  if (!pdf) {
+    ui.alert('Erro', 'Contrato assinado não encontrado.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const tpl = emailTemplateContratoFinal({
+    nome: d.nome,
+    apto: d.apto
+  });
+
+  const logoBlob = getLogoBlob();
+
+  const emailOptions = {
+    to: d.email,
+    subject: tpl.assunto,
+    htmlBody: tpl.htmlBody,
+    body: tpl.corpo,
+    attachments: [pdf]
+  };
+
+  if (logoBlob) {
+    emailOptions.inlineImages = {
+      logoBASE250: logoBlob
+    };
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  registrarAuditoriaEnvio(d.apto, d.nome, 'EMAIL 4 – CONTRATO FINAL');
+  ui.alert('Sucesso', 'Contrato final enviado.', ui.ButtonSet.OK);
+}
+
+
+// -----------------------------------------------------
+// MENU → E-MAIL 5 | DECLARAÇÃO
+// -----------------------------------------------------
+function menuEnviarDeclaracaoEmail() {
+  const ui = SpreadsheetApp.getUi();
+  const r = ui.prompt('🧾 Declaração', 'Digite os 3 dígitos do apartamento:', ui.ButtonSet.OK_CANCEL);
+  if (r.getSelectedButton() !== ui.Button.OK) return;
+
+  const d = obterDadosContrato(r.getResponseText().trim());
+  if (!d || !d.email) {
+    ui.alert('Erro', 'Dados não encontrados.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const pdf = localizarPdf(d.linkPasta, 'DECLARACAO_');
+  if (!pdf) {
+    ui.alert('Erro', 'Declaração não encontrada.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const tpl = emailTemplateDeclaracao(d);
+  const logoBlob = getLogoBlob();
+
+  const emailOptions = {
+    to: d.email,
+    subject: tpl.assunto,
+    htmlBody: tpl.htmlBody,
+    body: tpl.corpo,
+    attachments: [pdf]
+  };
+
+  if (logoBlob) {
+    emailOptions.inlineImages = {
+      logoBASE250: logoBlob
+    };
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  registrarAuditoriaEnvio(d.apto, d.nome, 'EMAIL 5 – DECLARAÇÃO');
+  ui.alert('Sucesso', 'Declaração enviada.', ui.ButtonSet.OK);
+}
+
+
+// -----------------------------------------------------
+// FUNÇÃO DIRETA PARA ENVIO DE DECLARAÇÃO
+// Usada pelo MÓDULO 6 durante geração automática
+// -----------------------------------------------------
+function enviarEmailDeclaracaoDireto(nome, email, apto, pdfBlob) {
+  const d = {
+    nome: nome,
+    apto: apto
+  };
+
+  const tpl = emailTemplateDeclaracao(d);
+  const logoBlob = getLogoBlob();
+
+  const emailOptions = {
+    to: email,
+    subject: tpl.assunto,
+    htmlBody: tpl.htmlBody,
+    body: tpl.corpo,
+    attachments: [pdfBlob]
+  };
+
+  if (logoBlob) {
+    emailOptions.inlineImages = {
+      logoBASE250: logoBlob
+    };
+  }
+
+  MailApp.sendEmail(emailOptions);
+
+  registrarAuditoriaEnvio(apto, nome, 'EMAIL 5 – DECLARAÇÃO (AUTO)');
+}
+
+
+// -----------------------------------------------------
+// AUDITORIA
+// -----------------------------------------------------
+function registrarAuditoriaEnvio(apto, inquilino, tipo) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let aba = ss.getSheetByName(CONFIG_CONTRATOS.abaAuditoria);
+
+  if (!aba) {
+    aba = ss.insertSheet(CONFIG_CONTRATOS.abaAuditoria);
+    aba.appendRow(['Data', 'Apto', 'Inquilino', 'Tipo']);
+  }
+
+  aba.appendRow([new Date(), apto, inquilino, tipo]);
+}
+
+
+// -----------------------------------------------------
+// MENUS (chamados pelo BASE250_Menu.gs)
+// -----------------------------------------------------
 
 function menuWhatsContratoEnviado() {
   fluxoWhatsApp({ tipo: 'Whats_Contrato_Enviado' });
