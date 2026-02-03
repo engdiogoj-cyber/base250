@@ -1086,6 +1086,7 @@ function onOpen(e) {
     .addItem('⚙️ Sobre', 'menuSobre')
     .addToUi();
 }
+*/
 
 function menuGerarContrato() {
   fluxoContrato({ modo: 'GERAR' });
@@ -2610,6 +2611,8 @@ function identificarTipoArquivo(arquivo) {
 // - ✅ Mantido: Todas as outras opções
 // =====================================================
 
+// DEPRECATED - Replaced by unified onOpen at end of file
+/*
 function onOpen(e) {
   const ui = SpreadsheetApp.getUi();
 
@@ -2714,7 +2717,7 @@ function onOpen(e) {
     .addItem('📋 Ver Auditoria', 'menuAbrirAuditoria')
     .addToUi();
 }
-
+*/
 
 // =====================================================
 // AÇÕES DO MENU (APENAS DISPATCH)
@@ -5794,14 +5797,121 @@ function encerrarContratoIntegrado(apto, data, obs) {
 }
 
 /**
- * CRIAR MENU NO SHEETS
+ * CRIAR MENU NO SHEETS - FUNÇÃO UNIFICADA
+ * Esta é a única função onOpen ativa no sistema
+ * Cria todos os menus: Painéis, Documentos e Mensagens
  */
 function onOpen(e) {
   const ui = SpreadsheetApp.getUi();
   
+  // =====================================================
+  // MENU 0 – PAINÉIS (ACESSO RÁPIDO)
+  // =====================================================
   ui.createMenu('🚀 BASE250')
     .addItem('📱 Abrir Painel Integrado', 'abrirPainelIntegrado')
     .addItem('🏢 Abrir Painel Administrativo', 'abrirPainelAdministrativo')
+    .addItem('📊 Abrir Painel Unificado', 'abrirPainelDashboard')
+    .addToUi();
+  
+  // =====================================================
+  // MENU 1 – DOCUMENTOS
+  // =====================================================
+  ui.createMenu('🏢 Base 250 | Documentos')
+    
+    // ─────────────────────────────────────────────────────
+    // SUBMENU: DADOS DO CONTRATO
+    // ─────────────────────────────────────────────────────
+    .addSubMenu(
+      ui.createMenu('📝 Dados do Contrato')
+        .addItem('📝 Preencher/Editar Dados', 'menuPreencherDadosContrato')
+        .addItem('✅ Validar e Padronizar', 'menuValidarPadronizarDados')
+    )
+    
+    .addSeparator()
+    
+    // ─────────────────────────────────────────────────────
+    // GERAÇÃO DE DOCUMENTOS
+    // ─────────────────────────────────────────────────────
+    .addItem('📄 Gerar Contrato', 'menuGerarContrato')
+    .addItem('📄 Revisar / Atualizar Contrato', 'menuAtualizarContrato')
+    .addSeparator()
+    .addItem('🧾 Gerar Declaração', 'menuDeclaracaoResidencia')
+    .addItem('📄🧾 Contrato + Declaração', 'menuContratoMaisDeclaracao')
+    
+    .addSeparator()
+    
+    // ─────────────────────────────────────────────────────
+    // IMPORTAÇÃO DO FORMS
+    // ─────────────────────────────────────────────────────
+    .addSubMenu(
+      ui.createMenu('📥 Importação Forms')
+        .addItem('📥 Importar dados do Forms', 'menuImportarDoForms')
+        .addItem('🔍 Diagnosticar Cabeçalhos', 'menuDiagnosticarForms')
+    )
+    
+    .addSeparator()
+    
+    .addItem('📊 Ver Resumo', 'menuResumo')
+    
+    .addSeparator()
+    
+    // ─────────────────────────────────────────────────────
+    // SUBMENU: LISTAR ARQUIVOS
+    // ─────────────────────────────────────────────────────
+    .addSubMenu(
+      ui.createMenu('📋 Listar Arquivos')
+        .addItem('📁 De um apartamento', 'menuListarArquivosApto')
+        .addSeparator()
+        .addItem('🏘️ Todos os apartamentos', 'menuListarTodosApartamentos')
+        .addItem('📄 Pasta Documentos', 'menuListarPastaDocumentos')
+        .addItem('📸 Pasta Fotos', 'menuListarPastaFotos')
+        .addSeparator()
+        .addItem('🗂️ TUDO completo', 'menuListarTudoCompleto')
+    )
+    
+    .addSeparator()
+    
+    // ─────────────────────────────────────────────────────
+    // SUBMENU: RENOMEAR / LINKS
+    // ─────────────────────────────────────────────────────
+    .addSubMenu(
+      ui.createMenu('✏️ Renomear / Links')
+        .addItem('📁 Renomear Pasta', 'menuRenomearPasta')
+        .addSeparator()
+        .addItem('📄 Renomear Contrato', 'menuRenomearContrato')
+        .addItem('✅ Renomear Contrato Assinado', 'menuRenomearContratoAssinado')
+        .addItem('🧾 Renomear Declaração', 'menuRenomearDeclaracao')
+        .addItem('📸 Renomear Foto', 'menuRenomearFoto')
+        .addItem('📄 Renomear Documento', 'menuRenomearDocumento')
+        .addSeparator()
+        .addItem('🔗 Gerenciar Links (E-I)', 'menuGerenciarLinks')
+    )
+    
+    .addSeparator()
+    .addItem('📚 Encerrar Contrato', 'menuEncerrarContrato')
+    
+    .addToUi();
+
+  // =====================================================
+  // MENU 2 – MENSAGENS
+  // =====================================================
+  ui.createMenu('📨 Base 250 | Mensagens')
+    .addItem('📧 E-mail 1 | Enviar Contrato p/ assinatura', 'menuEnviarContratoEmail')
+    .addItem('✅ E-mail 2 | Confirmar Contrato Assinado', 'menuEnviarContratoAssinadoEmail')
+    .addItem('🏢 E-mail 3 | Boas-vindas / orientações', 'menuEnviarBoasVindas')
+    .addItem('📄 E-mail 4 | Contrato final assinado pelo proprietário', 'menuEnviarContratoFinalEmail')
+    .addItem('🧾 E-mail 5 | Declaração de residência', 'menuEnviarDeclaracaoEmail')
+    .addSeparator()
+    .addSubMenu(
+      ui.createMenu('📲 Enviar WhatsApp')
+        .addItem('📄 Contrato enviado', 'menuWhatsContratoEnviado')
+        .addItem('✅ Contrato assinado', 'menuWhatsContratoAssinado')
+        .addItem('🏢 Boas-vindas', 'menuWhatsBoasVindas')
+    )
+    .addSeparator()
+    .addItem('🔍 Buscar Apartamento', 'menuBuscarApto')
+    .addItem('⚙️ Sobre', 'menuSobre')
+    .addItem('📋 Ver Auditoria', 'menuAbrirAuditoria')
     .addToUi();
 }
 
