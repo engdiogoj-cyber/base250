@@ -171,6 +171,176 @@
       color: white;
     }
     
+    /* Bloqueio de foto para apartamentos ocupados */
+    .apto-card[data-status="ocupado"] .card-imagem {
+      position: relative;
+    }
+    
+    .apto-card[data-status="ocupado"] .card-imagem::after {
+      content: '🔒 OCUPADO';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    
+    .apto-card[data-status="ocupado"] .card-imagem img,
+    .apto-card[data-status="ocupado"] .card-imagem-placeholder {
+      filter: blur(10px);
+    }
+    
+    /* Botão de edição no card */
+    .btn-editar-card {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(255,255,255,0.95);
+      color: var(--cor-primaria);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.3s;
+      display: none;
+    }
+    
+    .admin-mode .btn-editar-card {
+      display: block;
+    }
+    
+    .btn-editar-card:hover {
+      background: var(--cor-primaria);
+      color: white;
+    }
+    
+    /* Botão Admin no Header */
+    .btn-admin {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--cor-primaria);
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+    }
+    
+    .btn-admin:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+    
+    .btn-admin.ativo {
+      background: #f44336;
+    }
+    
+    /* Modal de Edição */
+    .modal-editar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal-editar.ativo {
+      display: flex;
+    }
+    
+    .modal-editar-conteudo {
+      background: white;
+      border-radius: 16px;
+      max-width: 450px;
+      width: 100%;
+      animation: modalIn 0.3s ease;
+    }
+    
+    .modal-editar-header {
+      background: var(--cor-primaria);
+      color: white;
+      padding: 20px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-editar-header h3 {
+      font-size: 18px;
+    }
+    
+    .modal-editar-body {
+      padding: 25px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+    }
+    
+    .btn-salvar {
+      width: 100%;
+      padding: 14px;
+      background: var(--cor-sucesso);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-salvar:hover {
+      background: #256b29;
+    }
+    
     .card-numero {
       position: absolute;
       bottom: 15px;
@@ -544,6 +714,52 @@
   <!-- Toast -->
   <div class="toast" id="toast">Link copiado!</div>
 
+  <!-- Botão Admin -->
+  <button class="btn-admin" id="btn-admin" onclick="toggleAdminMode()">
+    ⚙️ Admin
+  </button>
+
+  <!-- Modal de Edição -->
+  <div class="modal-editar" id="modal-editar">
+    <div class="modal-editar-conteudo">
+      <div class="modal-editar-header">
+        <h3>✏️ Editar Apartamento</h3>
+        <button class="modal-fechar" onclick="fecharModalEditar()">&times;</button>
+      </div>
+      <div class="modal-editar-body">
+        <input type="hidden" id="editar-numero">
+        
+        <div class="form-group">
+          <label>Apartamento</label>
+          <input type="text" id="editar-titulo" readonly style="background:#f5f5f5;">
+        </div>
+        
+        <div class="form-group">
+          <label>💰 Valor do Aluguel (R$)</label>
+          <input type="number" id="editar-valor" placeholder="Ex: 1500" min="0" step="50">
+        </div>
+        
+        <div class="form-group">
+          <label>📋 Status</label>
+          <select id="editar-status">
+            <option value="disponivel">✅ Disponível</option>
+            <option value="ocupado">🔴 Ocupado</option>
+            <option value="reservado">🔶 Reservado</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>📝 Descrição</label>
+          <textarea id="editar-descricao" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:8px;min-height:80px;font-family:inherit;"></textarea>
+        </div>
+        
+        <button class="btn-salvar" onclick="salvarEdicao()">
+          💾 Salvar Alterações
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="footer">
     <p>© 2026 BASE250 — Residencial Itacorubi</p>
@@ -553,7 +769,7 @@
   <script>
     // Dados dos apartamentos (serão carregados do Google Sheets quando integrado)
     // linkForms: URL do Google Forms para cadastro de interesse (para integração futura)
-    const apartamentos = [
+    let apartamentos = [
       {
         numero: '101',
         titulo: 'Apartamento 101 - Térreo',
@@ -606,6 +822,100 @@
       }
     ];
 
+    // Carregar dados do localStorage se existirem
+    function carregarDadosSalvos() {
+      const dados = localStorage.getItem('base250_apartamentos');
+      if (dados) {
+        const salvos = JSON.parse(dados);
+        // Mesclar dados salvos com os originais
+        apartamentos = apartamentos.map(apto => {
+          const salvo = salvos.find(s => s.numero === apto.numero);
+          if (salvo) {
+            return { ...apto, ...salvo };
+          }
+          return apto;
+        });
+      }
+    }
+
+    // Salvar dados no localStorage
+    function salvarDados() {
+      const dadosParaSalvar = apartamentos.map(a => ({
+        numero: a.numero,
+        valor: a.valor,
+        status: a.status,
+        descricao: a.descricao
+      }));
+      localStorage.setItem('base250_apartamentos', JSON.stringify(dadosParaSalvar));
+    }
+
+    // Modo Admin
+    let adminMode = false;
+
+    function toggleAdminMode() {
+      adminMode = !adminMode;
+      const btn = document.getElementById('btn-admin');
+      const container = document.querySelector('.container');
+      
+      if (adminMode) {
+        btn.textContent = '🔓 Sair do Admin';
+        btn.classList.add('ativo');
+        container.classList.add('admin-mode');
+        mostrarToast('🔓 Modo Admin ativado! Clique em ✏️ para editar.');
+      } else {
+        btn.textContent = '⚙️ Admin';
+        btn.classList.remove('ativo');
+        container.classList.remove('admin-mode');
+        mostrarToast('🔒 Modo Admin desativado');
+      }
+    }
+
+    // Abrir modal de edição
+    function abrirModalEditar(numero) {
+      const apto = apartamentos.find(a => a.numero === numero);
+      if (!apto) return;
+      
+      document.getElementById('editar-numero').value = apto.numero;
+      document.getElementById('editar-titulo').value = apto.titulo;
+      document.getElementById('editar-valor').value = apto.valor;
+      document.getElementById('editar-status').value = apto.status;
+      document.getElementById('editar-descricao').value = apto.descricao;
+      
+      document.getElementById('modal-editar').classList.add('ativo');
+    }
+
+    // Fechar modal de edição
+    function fecharModalEditar() {
+      document.getElementById('modal-editar').classList.remove('ativo');
+    }
+
+    // Salvar edição
+    function salvarEdicao() {
+      const numero = document.getElementById('editar-numero').value;
+      const valor = parseFloat(document.getElementById('editar-valor').value);
+      const status = document.getElementById('editar-status').value;
+      const descricao = document.getElementById('editar-descricao').value;
+      
+      // Encontrar e atualizar o apartamento
+      const idx = apartamentos.findIndex(a => a.numero === numero);
+      if (idx !== -1) {
+        apartamentos[idx].valor = valor;
+        apartamentos[idx].status = status;
+        apartamentos[idx].descricao = descricao;
+        
+        // Salvar no localStorage
+        salvarDados();
+        
+        // Re-renderizar
+        renderizarCards(apartamentos);
+        
+        // Fechar modal
+        fecharModalEditar();
+        
+        mostrarToast(`✅ Apartamento ${numero} atualizado!`);
+      }
+    }
+
     // Renderizar cards
     function renderizarCards(lista) {
       const container = document.getElementById('cards-container');
@@ -623,6 +933,7 @@
         html += `
           <div class="apto-card" data-status="${apto.status}" id="card-${apto.numero}">
             <div class="card-imagem">
+              <button class="btn-editar-card" onclick="event.stopPropagation(); abrirModalEditar('${apto.numero}')">✏️ Editar</button>
               ${apto.imagem 
                 ? `<img src="${apto.imagem}" alt="Apartamento ${apto.numero}">`
                 : `<div class="card-imagem-placeholder">🏠<span>Apartamento ${apto.numero}</span></div>`
@@ -810,6 +1121,7 @@
 
     // Inicializar
     document.addEventListener('DOMContentLoaded', () => {
+      carregarDadosSalvos();
       renderizarCards(apartamentos);
       scrollParaCard();
     });
