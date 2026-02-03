@@ -243,7 +243,11 @@ function menuDashboard_onOpen() {
   try {
     const ui = SpreadsheetApp.getUi();
     ui.createMenu('BASE250')
-      .addItem('Abrir Painel','abrirPainelDashboard')
+      .addItem('🏢 Abrir Painel Administrativo','abrirPainelAdministrativo')
+      .addItem('📊 Abrir Painel Unificado','abrirPainelDashboard')
+      .addItem('🚀 Abrir Painel Integrado','abrirPainelIntegrado')
+      .addSeparator()
+      .addItem('📋 Abrir Planilha','abrirPlanilha')
       .addToUi();
   } catch (e) {
     Logger.log('menuDashboard_onOpen error: ' + e.message);

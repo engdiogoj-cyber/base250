@@ -1,10 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Painel Base 250</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BASE250 - Painel Unificado</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .logo h1 {
+      font-size: 36px;
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    
+    .logo p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .menu-items {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .menu-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    }
+    
+    .menu-item .icon {
+      font-size: 28px;
+      margin-right: 15px;
+    }
+    
+    .menu-item .content {
+      flex: 1;
+    }
+    
+    .menu-item .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .menu-item .description {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #999;
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to the Painel Base 250</h1>
-    <p>This is the main dashboard for Base 250.</p>
+  <div class="container">
+    <div class="logo">
+      <h1>🏢 BASE250</h1>
+      <p>Sistema Unificado de Gestão de Imóveis</p>
+    </div>
+    
+    <div class="menu-items">
+      <a href="#" class="menu-item" onclick="openAdminPanel(); return false;">
+        <span class="icon">📊</span>
+        <div class="content">
+          <div class="title">Painel Administrativo</div>
+          <div class="description">Gestão completa de apartamentos, inquilinos e contratos</div>
+        </div>
+      </a>
+      
+      <a href="#" class="menu-item" onclick="openIntegratedPanel(); return false;">
+        <span class="icon">🚀</span>
+        <div class="content">
+          <div class="title">Painel Integrado</div>
+          <div class="description">Visão geral e operações rápidas</div>
+        </div>
+      </a>
+      
+      <a href="#" class="menu-item" onclick="openSpreadsheet(); return false;">
+        <span class="icon">📋</span>
+        <div class="content">
+          <div class="title">Abrir Planilha</div>
+          <div class="description">Acessar dados no Google Sheets</div>
+        </div>
+      </a>
+    </div>
+    
+    <div class="footer">
+      © 2026 BASE250 - Residencial Itacorubi
+    </div>
+  </div>
+  
+  <script>
+    function openAdminPanel() {
+      google.script.run.abrirPainelAdministrativo();
+      google.script.host.close();
+    }
+    
+    function openIntegratedPanel() {
+      google.script.run.abrirPainelIntegrado();
+      google.script.host.close();
+    }
+    
+    function openSpreadsheet() {
+      google.script.run
+        .withSuccessHandler(function(url) {
+          window.open(url, '_blank');
+        })
+        .abrirPlanilha();
+    }
+  </script>
 </body>
 </html>

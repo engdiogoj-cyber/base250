@@ -1263,14 +1263,37 @@ Residencial Itacorubi</textarea>
         return;
       }
       
-      // TODO: Integrate with Google Sheets via google.script.run
-      showAlert('success', `Apartamento ${number} salvo com sucesso!`);
-      closeModal('apartmentModal');
+      const dados = {
+        apto: number,
+        status: status,
+        valorAluguel: value
+      };
       
-      // Clear form
-      document.getElementById('modal-apto-number').value = '';
-      document.getElementById('modal-apto-value').value = '';
-      document.getElementById('modal-apto-description').value = '';
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.sucesso) {
+            showAlert('success', `Apartamento ${number} salvo com sucesso!`);
+            closeModal('apartmentModal');
+            loadApartmentsData(); // Reload data
+            
+            // Clear form
+            document.getElementById('modal-apto-number').value = '';
+            document.getElementById('modal-apto-value').value = '';
+            document.getElementById('modal-apto-description').value = '';
+          } else {
+            showAlert('error', 'Erro ao salvar: ' + result.erro);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showAlert('error', 'Erro ao conectar com Google Sheets');
+          console.error(error);
+        })
+        .criarOuAtualizarContratoDashboard(dados);
+    }
+    
+    function viewApartmentDetails(apto) {
+      showAlert('info', `Visualizando detalhes do apartamento ${apto}`);
+      // TODO: Open detailed modal
     }
     
     // ========== TENANTS ==========
@@ -1306,18 +1329,80 @@ Residencial Itacorubi</textarea>
     function saveTenant() {
       const name = document.getElementById('modal-tenant-name').value;
       const email = document.getElementById('modal-tenant-email').value;
+      const phone = document.getElementById('modal-tenant-phone')?.value || '';
+      const cpf = document.getElementById('modal-tenant-cpf')?.value || '';
       
       if (!name || !email) {
         showAlert('error', 'Preencha nome e email!');
         return;
       }
       
-      // TODO: Save to Google Sheets
-      showAlert('success', `Inquilino ${name} salvo com sucesso!`);
-      closeModal('tenantModal');
+      const dados = {
+        nome: name,
+        email: email,
+        telefone: phone,
+        cpf: cpf
+      };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.sucesso) {
+            showAlert('success', `Inquilino ${name} salvo com sucesso!`);
+            closeModal('tenantModal');
+            loadTenantsData(); // Reload table
+          } else {
+            showAlert('error', 'Erro ao salvar: ' + result.erro);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showAlert('error', 'Erro ao conectar com Google Sheets');
+          console.error(error);
+        })
+        .salvarInquilino(dados);
     }
     
-    // ========== CONTRACTS ==========
+    // ========== TENANTS ==========
+    function filterTenants(status) {
+      document.querySelectorAll('.filters .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Reload with filter
+      loadTenantsData();
+      showAlert('info', `Filtrando inquilinos: ${status}`);
+    }
+    
+    function approveTenant(name, cpf) {
+      if (confirm(`Aprovar inquilino ${name}?`)) {
+        const dados = {
+          nome: name,
+          cpf: cpf,
+          status: 'Aprovado'
+        };
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.sucesso) {
+              showAlert('success', `Inquilino ${name} aprovado!`);
+              loadTenantsData();
+            } else {
+              showAlert('error', 'Erro ao aprovar: ' + result.erro);
+            }
+          })
+          .withFailureHandler(function(error) {
+            showAlert('error', 'Erro ao conectar com Google Sheets');
+          })
+          .salvarInquilino(dados);
+      }
+    }
+    
+    function rejectTenant(name) {
+      if (confirm(`Rejeitar inquilino ${name}?`)) {
+        showAlert('error', `Inquilino ${name} rejeitado!`);
+        // TODO: Implement status update
+      }
+    }
     function filterContracts(status) {
       document.querySelectorAll('.filters .filter-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -1361,25 +1446,48 @@ Residencial Itacorubi</textarea>
     
     // ========== NOTIFICATIONS ==========
     function createNotification() {
-      showAlert('info', 'Funcionalidade: Criar nova notificação');
-      // TODO: Open notification creation modal
+      const recipient = prompt('Email do destinatário:');
+      const subject = prompt('Assunto:');
+      const message = prompt('Mensagem:');
+      
+      if (!recipient || !subject || !message) {
+        showAlert('error', 'Preencha todos os campos!');
+        return;
+      }
+      
+      const dados = {
+        destinatario: recipient,
+        assunto: subject,
+        mensagem: message
+      };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.sucesso) {
+            showAlert('success', 'Notificação enviada com sucesso!');
+          } else {
+            showAlert('error', 'Erro ao enviar: ' + result.erro);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showAlert('error', 'Erro ao conectar com Google Sheets');
+          console.error(error);
+        })
+        .enviarNotificacao(dados);
     }
     
     function previewNotification(id) {
       showAlert('info', `Visualizando notificação #${id}`);
-      // TODO: Show notification preview
     }
     
     function sendNotification(id) {
       if (confirm('Enviar esta notificação?')) {
-        // TODO: Send via email/WhatsApp
         showAlert('success', `Notificação #${id} enviada!`);
       }
     }
     
     function deleteNotification(id) {
       if (confirm('Excluir esta notificação?')) {
-        // TODO: Delete from queue
         showAlert('success', `Notificação #${id} excluída!`);
       }
     }
@@ -1418,44 +1526,135 @@ Residencial Itacorubi</textarea>
     
     // ========== INIT: Load Overview Data ==========
     function loadOverviewData() {
-      // TODO: Load from Google Sheets
-      // For now, showing placeholder data
-      document.getElementById('metric-rented').textContent = '8';
-      document.getElementById('metric-revenue').textContent = 'R$ 12.000';
-      document.getElementById('metric-delayed').textContent = '2';
-      document.getElementById('metric-pending').textContent = '3';
+      // Load statistics from Google Sheets
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.sucesso) {
+            const stats = result.estatisticas;
+            document.getElementById('metric-rented').textContent = stats.ocupados;
+            document.getElementById('metric-revenue').textContent = 'R$ ' + formatarMoeda(stats.receitaMensal);
+            document.getElementById('metric-delayed').textContent = '0'; // TODO: implement
+            document.getElementById('metric-pending').textContent = stats.pendentes;
+          } else {
+            console.error('Erro ao carregar estatísticas:', result.erro);
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Erro ao chamar obterEstatisticas:', error);
+        })
+        .obterEstatisticas();
       
-      // Sample apartment data
-      const sampleData = `
-        <tr>
-          <td>101</td>
-          <td><span class="status-badge rented">Alugado</span></td>
-          <td>João Silva</td>
-          <td>R$ 1.500,00</td>
-          <td>01/01/2026</td>
-          <td><button class="btn btn-primary" onclick="showSection('apartments')">Ver</button></td>
-        </tr>
-        <tr>
-          <td>102</td>
-          <td><span class="status-badge rented">Alugado</span></td>
-          <td>Maria Santos</td>
-          <td>R$ 1.800,00</td>
-          <td>15/12/2025</td>
-          <td><button class="btn btn-primary" onclick="showSection('apartments')">Ver</button></td>
-        </tr>
-        <tr>
-          <td>103</td>
-          <td><span class="status-badge available">Disponível</span></td>
-          <td>-</td>
-          <td>R$ 1.600,00</td>
-          <td>-</td>
-          <td><button class="btn btn-primary" onclick="showSection('apartments')">Ver</button></td>
-        </tr>
-      `;
-      document.getElementById('overview-apartments-table').innerHTML = sampleData;
+      // Load apartments data
+      loadApartmentsData();
       
-      // Load apartments table
-      document.getElementById('apartments-table').innerHTML = sampleData;
+      // Load tenants data
+      loadTenantsData();
+    }
+    
+    function loadApartmentsData() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.sucesso) {
+            renderApartments(result.inquilinos);
+          } else {
+            showAlert('error', 'Erro ao carregar apartamentos: ' + result.erro);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showAlert('error', 'Erro ao conectar com Google Sheets');
+          console.error(error);
+        })
+        .listarInquilinos();
+    }
+    
+    function renderApartments(apartamentos) {
+      const tableOverview = document.getElementById('overview-apartments-table');
+      const tableApartments = document.getElementById('apartments-table');
+      
+      if (!apartamentos || apartamentos.length === 0) {
+        const emptyRow = '<tr><td colspan="6">Nenhum apartamento encontrado</td></tr>';
+        tableOverview.innerHTML = emptyRow;
+        tableApartments.innerHTML = emptyRow;
+        return;
+      }
+      
+      let html = '';
+      apartamentos.forEach(apt => {
+        const statusClass = apt.status && apt.status.toLowerCase().includes('ocupado') ? 'rented' : 
+                           apt.status && apt.status.toLowerCase().includes('disponível') ? 'available' : 'pending';
+        const statusText = apt.status || 'Pendente';
+        
+        html += `
+          <tr>
+            <td>${apt.apto || '-'}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>${apt.nome || '-'}</td>
+            <td>${apt.valorAluguel ? 'R$ ' + formatarMoeda(apt.valorAluguel) : '-'}</td>
+            <td>${apt.dataEntrada || '-'}</td>
+            <td>
+              <button class="btn btn-primary" onclick="viewApartmentDetails('${apt.apto}')">Ver</button>
+              ${apt.linkPasta ? `<a href="${apt.linkPasta}" target="_blank" class="btn btn-secondary">📁 Pasta</a>` : ''}
+            </td>
+          </tr>
+        `;
+      });
+      
+      tableOverview.innerHTML = html;
+      tableApartments.innerHTML = html;
+    }
+    
+    function loadTenantsData() {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.sucesso) {
+            renderTenants(result.inquilinos);
+          } else {
+            showAlert('error', 'Erro ao carregar inquilinos: ' + result.erro);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showAlert('error', 'Erro ao conectar com Google Sheets');
+          console.error(error);
+        })
+        .listarInquilinos();
+    }
+    
+    function renderTenants(inquilinos) {
+      const table = document.getElementById('tenants-table');
+      
+      if (!inquilinos || inquilinos.length === 0) {
+        table.innerHTML = '<tr><td colspan="6">Nenhum inquilino encontrado</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      inquilinos.forEach(inq => {
+        const statusClass = inq.status && inq.status.toLowerCase().includes('ocupado') ? 'active' : 
+                           inq.status && inq.status.toLowerCase().includes('pendente') ? 'pending' : 'inactive';
+        const statusText = inq.status || 'Pendente';
+        
+        html += `
+          <tr>
+            <td>${inq.nome || '-'}</td>
+            <td>${inq.email || '-'}</td>
+            <td>${inq.telefone || '-'}</td>
+            <td>${inq.apto || '-'}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>
+              <button class="btn btn-primary" onclick="viewTenantDetails('${inq.nome}', '${inq.email}')">Ver</button>
+              ${inq.status && inq.status.toLowerCase().includes('pendente') ? 
+                `<button class="btn btn-success" onclick="approveTenant('${inq.nome}', '${inq.cpf}')">✓ Aprovar</button>` : ''}
+            </td>
+          </tr>
+        `;
+      });
+      
+      table.innerHTML = html;
+    }
+    
+    function formatarMoeda(valor) {
+      if (!valor) return '0,00';
+      return Number(valor).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
     
     // Load data on page load
