@@ -156,6 +156,77 @@ function abrirPlanilha() {
 }
 
 /**
+ * GERAR CONTRATO DO DASHBOARD
+ * Chama a função fluxoContrato se disponível
+ */
+function gerarContratoDashboard(apto) {
+  try {
+    // Verificar se a função de gerar contrato existe
+    if (typeof fluxoContrato === 'function') {
+      fluxoContrato({ apto: apto, gerar: true, atualizar: false });
+      return { sucesso: true, mensagem: 'Contrato gerado com sucesso!' };
+    } else if (typeof gerarDocumentoContrato === 'function') {
+      // Buscar dados da linha
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const aba = ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+      const dados = aba.getDataRange().getValues();
+      
+      for (let i = 1; i < dados.length; i++) {
+        if ((dados[i][COL_CONTRATOS.apto - 1] || '').toString() === String(apto)) {
+          gerarDocumentoContrato(apto, dados[i]);
+          return { sucesso: true, mensagem: 'Contrato gerado com sucesso!' };
+        }
+      }
+      return { sucesso: false, erro: 'Apartamento não encontrado' };
+    } else {
+      return { sucesso: false, erro: 'Função de gerar contrato não disponível' };
+    }
+  } catch (e) {
+    Logger.log('Erro gerarContratoDashboard: ' + e.message);
+    return { sucesso: false, erro: e.message };
+  }
+}
+
+/**
+ * GERAR DECLARAÇÃO DE RESIDÊNCIA DO DASHBOARD
+ * Chama a função gerarDeclaracaoResidencia se disponível
+ */
+function gerarDeclaracaoDashboard(apto) {
+  try {
+    // Verificar se a função de gerar declaração existe
+    if (typeof gerarDeclaracaoResidencia === 'function') {
+      // Buscar dados do apartamento
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const aba = ss.getSheetByName(CONFIG_CONTRATOS.abaContratos);
+      const dados = aba.getDataRange().getValues();
+      
+      for (let i = 1; i < dados.length; i++) {
+        if ((dados[i][COL_CONTRATOS.apto - 1] || '').toString() === String(apto)) {
+          const dadosApto = {
+            apto: apto,
+            inquilino: dados[i][COL_CONTRATOS.inquilino - 1] || '',
+            cpf: dados[i][COL_CONTRATOS.cpf - 1] || '',
+            nacionalidade: dados[i][COL_CONTRATOS.nacionalidade - 1] || '',
+            estadoCivil: dados[i][COL_CONTRATOS.estadoCivil - 1] || '',
+            profissao: dados[i][COL_CONTRATOS.profissao - 1] || '',
+            genero: dados[i][COL_CONTRATOS.genero - 1] || '',
+            linkPasta: dados[i][COL_CONTRATOS.linkPasta - 1] || ''
+          };
+          gerarDeclaracaoResidencia(dadosApto);
+          return { sucesso: true, mensagem: 'Declaração gerada com sucesso!' };
+        }
+      }
+      return { sucesso: false, erro: 'Apartamento não encontrado' };
+    } else {
+      return { sucesso: false, erro: 'Função de gerar declaração não disponível' };
+    }
+  } catch (e) {
+    Logger.log('Erro gerarDeclaracaoDashboard: ' + e.message);
+    return { sucesso: false, erro: e.message };
+  }
+}
+
+/**
  * ABRIR PAINEL (chamado pelo menu)
  */
 function abrirPainelDashboard() {
