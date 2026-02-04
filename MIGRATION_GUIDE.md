@@ -1,84 +1,84 @@
-# Migration Guide: V1 → V2
+# Guia de Migração: V1 → V2
 
-## BASE250 System Migration Guide
-**From:** INTEGRACAO_HTML_GAS.gs (V1)  
-**To:** INTEGRACAO_HTML_GAS_V2.gs (V2)  
-**Date:** February 4, 2026
-
----
-
-## Executive Summary
-
-This guide provides step-by-step instructions for migrating from V1 to V2 of the BASE250 system. The V2 version addresses all critical issues identified in the comprehensive code review while maintaining full backward compatibility.
-
-### Migration Benefits
-
-- ✅ **30%+ reduction in code size** (removed all duplicates)
-- ✅ **Enhanced security** (sensitive data moved to Script Properties)
-- ✅ **Improved performance** (caching layer implemented)
-- ✅ **Better maintainability** (JSDoc documentation, consistent style)
-- ✅ **Robust error handling** (comprehensive error management)
-- ✅ **Zero breaking changes** (fully backward compatible)
+## Guia de Migração do Sistema BASE250
+**De:** INTEGRACAO_HTML_GAS.gs (V1)  
+**Para:** INTEGRACAO_HTML_GAS_V2.gs (V2)  
+**Data:** 4 de Fevereiro de 2026
 
 ---
 
-## Pre-Migration Checklist
+## Resumo Executivo
 
-Before starting the migration, ensure you have:
+Este guia fornece instruções passo a passo para migrar da V1 para a V2 do sistema BASE250. A versão V2 resolve todos os problemas críticos identificados na revisão abrangente do código, mantendo total compatibilidade retroativa.
 
-- [ ] **Backup of current system**
-  - Export copy of current spreadsheet
-  - Download current script files
-  - Document current configuration
-  
-- [ ] **Access to Script Properties**
-  - Permissions to edit project properties
-  - List of sensitive data to configure
-  
-- [ ] **Testing environment ready**
-  - Copy of production spreadsheet
-  - Test data prepared
-  - Test user accounts
-  
-- [ ] **Stakeholders notified**
-  - Schedule maintenance window
-  - Inform affected users
-  - Prepare rollback plan
+### Benefícios da Migração
+
+- ✅ **Redução de 30%+ no tamanho do código** (removidas todas as duplicatas)
+- ✅ **Segurança aprimorada** (dados sensíveis movidos para Script Properties)
+- ✅ **Desempenho melhorado** (camada de cache implementada)
+- ✅ **Melhor manutenibilidade** (documentação JSDoc, estilo consistente)
+- ✅ **Tratamento de erros robusto** (gerenciamento abrangente de erros)
+- ✅ **Zero quebras de compatibilidade** (totalmente retrocompatível)
 
 ---
 
-## Phase 1: Preparation (Week 1)
+## Checklist Pré-Migração
 
-### 1.1 Create Development Copy
+Antes de iniciar a migração, certifique-se de ter:
+
+- [ ] **Backup do sistema atual**
+  - Exportar cópia da planilha atual
+  - Baixar arquivos de script atuais
+  - Documentar configuração atual
+  
+- [ ] **Acesso às Script Properties**
+  - Permissões para editar propriedades do projeto
+  - Lista de dados sensíveis para configurar
+  
+- [ ] **Ambiente de testes pronto**
+  - Cópia da planilha de produção
+  - Dados de teste preparados
+  - Contas de usuário de teste
+  
+- [ ] **Stakeholders notificados**
+  - Agendar janela de manutenção
+  - Informar usuários afetados
+  - Preparar plano de rollback
+
+---
+
+## Fase 1: Preparação (Semana 1)
+
+### 1.1 Criar Cópia de Desenvolvimento
 
 ```javascript
-// In Google Sheets
-1. Open production spreadsheet
-2. File → Make a copy
-3. Rename to "BASE250 - Development V2"
-4. Open Apps Script: Extensions → Apps Script
+// No Google Sheets
+1. Abrir planilha de produção
+2. Arquivo → Fazer uma cópia
+3. Renomear para "BASE250 - Desenvolvimento V2"
+4. Abrir Apps Script: Extensões → Apps Script
 ```
 
-### 1.2 Install V2 Code
+### 1.2 Instalar Código V2
 
 ```javascript
-// In Apps Script Editor
-1. Create new script file: INTEGRACAO_HTML_GAS_V2.gs
-2. Copy complete V2 code
-3. Save (Ctrl+S or Cmd+S)
-4. DO NOT delete V1 file yet (for rollback)
+// No Editor do Apps Script
+1. Criar novo arquivo de script: INTEGRACAO_HTML_GAS_V2.gs
+2. Copiar código V2 completo
+3. Salvar (Ctrl+S ou Cmd+S)
+4. NÃO excluir arquivo V1 ainda (para rollback)
 ```
 
-### 1.3 Configure Script Properties
+### 1.3 Configurar Script Properties
 
-**CRITICAL:** Configure sensitive data before first run
+**CRÍTICO:** Configure os dados sensíveis antes da primeira execução
 
 ```javascript
-// In Apps Script: Project Settings → Script Properties → Add property
+// No Apps Script: Configurações do projeto → Script Properties → Adicionar propriedade
 
-Required Properties:
+Propriedades Obrigatórias:
 ┌─────────────────────────────┬────────────────────────────────┐
-│ Property Key                │ Example Value                  │
+│ Chave da Propriedade        │ Valor de Exemplo               │
 ├─────────────────────────────┼────────────────────────────────┤
 │ ADMIN_EMAIL                 │ admin@example.com              │
 │ PROPRIETARIO_EMAIL          │ owner@example.com              │
@@ -92,21 +92,21 @@ Required Properties:
 │ PROPRIETARIO_BANCO          │ Banco do Brasil                │
 │ PROPRIETARIO_AGENCIA        │ 0000-0                         │
 │ PROPRIETARIO_CONTA          │ 000000-0                       │
-│ EMAIL_LOGO_ID               │ (Drive file ID)                │
+│ EMAIL_LOGO_ID               │ (ID do arquivo no Drive)       │
 └─────────────────────────────┴────────────────────────────────┘
 ```
 
-**To add properties:**
+**Para adicionar propriedades:**
 
-1. Apps Script Editor → Project Settings (⚙️ icon)
-2. Scroll to "Script Properties"
-3. Click "Add script property"
-4. Enter key and value
-5. Click "Save script properties"
+1. Editor Apps Script → Configurações do projeto (ícone ⚙️)
+2. Role até "Script Properties"
+3. Clique em "Adicionar propriedade de script"
+4. Digite a chave e o valor
+5. Clique em "Salvar propriedades de script"
 
-### 1.4 Verify Configuration
+### 1.4 Verificar Configuração
 
-Run the following test function:
+Execute a seguinte função de teste:
 
 ```javascript
 function testarConfiguracao() {
@@ -118,25 +118,25 @@ function testarConfiguracao() {
   
   props.forEach(prop => {
     const value = getScriptProperty(prop);
-    Logger.log(`${prop}: ${value ? '✅ Configured' : '❌ Missing'}`);
+    Logger.log(`${prop}: ${value ? '✅ Configurado' : '❌ Ausente'}`);
   });
 }
 ```
 
-Expected output:
+Saída esperada:
 ```
-ADMIN_EMAIL: ✅ Configured
-PROPRIETARIO_NOME: ✅ Configured
-PROPRIETARIO_CPF: ✅ Configured
+ADMIN_EMAIL: ✅ Configurado
+PROPRIETARIO_NOME: ✅ Configurado
+PROPRIETARIO_CPF: ✅ Configurado
 ```
 
 ---
 
-## Phase 2: Testing (Week 2)
+## Fase 2: Testes (Semana 2)
 
-### 2.1 Unit Testing
+### 2.1 Testes Unitários
 
-Test core utility functions:
+Testar funções utilitárias principais:
 
 ```javascript
 function testarUtilitarios() {
@@ -153,73 +153,73 @@ function testarUtilitarios() {
 }
 ```
 
-### 2.2 Integration Testing
+### 2.2 Testes de Integração
 
-Test key workflows:
+Testar fluxos principais:
 
 ```javascript
 function testarFluxoCompleto() {
   try {
-    // 1. Test form import
-    Logger.log('Testing form import...');
-    // menuImportarDoForms(); // Uncomment to test
+    // 1. Testar importação de formulário
+    Logger.log('Testando importação de formulário...');
+    // menuImportarDoForms(); // Descomente para testar
     
-    // 2. Test contract generation
-    Logger.log('Testing contract generation...');
-    // menuGerarContrato(); // Uncomment to test
+    // 2. Testar geração de contrato
+    Logger.log('Testando geração de contrato...');
+    // menuGerarContrato(); // Descomente para testar
     
-    // 3. Test email sending
-    Logger.log('Testing email sending...');
-    // Test email function
+    // 3. Testar envio de email
+    Logger.log('Testando envio de email...');
+    // Função de teste de email
     
-    Logger.log('✅ All tests passed');
+    Logger.log('✅ Todos os testes passaram');
   } catch (e) {
-    Logger.log('❌ Test failed: ' + e.message);
+    Logger.log('❌ Teste falhou: ' + e.message);
   }
 }
 ```
 
-### 2.3 Performance Testing
+### 2.3 Testes de Desempenho
 
-Compare V1 vs V2 performance:
+Comparar desempenho V1 vs V2:
 
 ```javascript
 function testarPerformance() {
   const inicio = new Date();
   
-  // Run operation
+  // Executar operação
   obterDadosApartamento('101');
   
   const fim = new Date();
   const tempo = fim - inicio;
   
-  Logger.log(`Execution time: ${tempo}ms`);
+  Logger.log(`Tempo de execução: ${tempo}ms`);
 }
 ```
 
-**Expected improvements:**
-- Dashboard load: 8-15s → 2-3s
-- Search operations: 2-4s → 0.5-1s
-- Contract generation: 3-5s → 1.5-2s
+**Melhorias esperadas:**
+- Carregamento do dashboard: 8-15s → 2-3s
+- Operações de busca: 2-4s → 0.5-1s
+- Geração de contrato: 3-5s → 1.5-2s
 
-### 2.4 Security Testing
+### 2.4 Testes de Segurança
 
-Verify sensitive data protection:
+Verificar proteção de dados sensíveis:
 
 ```javascript
 function testarSeguranca() {
-  // Verify no hardcoded PII in V2
-  const scriptContent = ''; // Load V2 script content
+  // Verificar se não há PII hardcoded na V2
+  const scriptContent = ''; // Carregar conteúdo do script V2
   
   const sensitivePatterns = [
-    /\d{3}\.\d{3}\.\d{3}-\d{2}/, // CPF pattern
-    /\(\d{2}\)\s?\d{5}-\d{4}/,   // Phone pattern
-    /\d{11}/                      // CPF numbers
+    /\d{3}\.\d{3}\.\d{3}-\d{2}/, // Padrão CPF
+    /\(\d{2}\)\s?\d{5}-\d{4}/,   // Padrão telefone
+    /\d{11}/                      // Números de CPF
   ];
   
   sensitivePatterns.forEach(pattern => {
     if (pattern.test(scriptContent)) {
-      Logger.log('⚠️ WARNING: Sensitive data found in code!');
+      Logger.log('⚠️ AVISO: Dados sensíveis encontrados no código!');
     }
   });
 }
@@ -227,32 +227,32 @@ function testarSeguranca() {
 
 ---
 
-## Phase 3: Gradual Migration (Week 3)
+## Fase 3: Migração Gradual (Semana 3)
 
-### 3.1 Parallel Running
+### 3.1 Execução em Paralelo
 
-Run V1 and V2 side-by-side:
+Executar V1 e V2 lado a lado:
 
 ```javascript
-// In V2, add compatibility wrapper
+// Na V2, adicionar wrapper de compatibilidade
 function menuGerarContratoV2() {
   try {
-    // V2 logic
+    // Lógica V2
     return menuGerarContrato();
   } catch (e) {
-    logError('V2 failed, falling back to V1', e);
-    // Call V1 version as fallback
+    logError('V2 falhou, voltando para V1', e);
+    // Chamar versão V1 como fallback
   }
 }
 ```
 
 ### 3.2 Feature Flags
 
-Control which version is used:
+Controlar qual versão é usada:
 
 ```javascript
 function usarV2() {
-  // Check script property to enable/disable V2
+  // Verificar propriedade de script para habilitar/desabilitar V2
   const useV2 = getScriptProperty('USE_V2') === 'true';
   return useV2;
 }
@@ -266,9 +266,9 @@ function menuGerarContrato() {
 }
 ```
 
-### 3.3 Monitoring
+### 3.3 Monitoramento
 
-Track V2 usage and errors:
+Rastrear uso e erros da V2:
 
 ```javascript
 function logMigrationMetrics(operation, version, success, duration) {
@@ -281,7 +281,7 @@ function logMigrationMetrics(operation, version, success, duration) {
     new Date(),
     operation,
     version,
-    success ? 'SUCCESS' : 'ERROR',
+    success ? 'SUCESSO' : 'ERRO',
     duration
   ]);
 }
@@ -289,54 +289,54 @@ function logMigrationMetrics(operation, version, success, duration) {
 
 ---
 
-## Phase 4: Full Deployment (Week 4)
+## Fase 4: Implantação Completa (Semana 4)
 
-### 4.1 Enable V2 Globally
+### 4.1 Habilitar V2 Globalmente
 
 ```javascript
-// Set script property
+// Definir propriedade de script
 setScriptProperty('USE_V2', 'true');
 
-// Or directly switch
-// 1. Rename INTEGRACAO_HTML_GAS.gs → INTEGRACAO_HTML_GAS_V1_BACKUP.gs
-// 2. Rename INTEGRACAO_HTML_GAS_V2.gs → INTEGRACAO_HTML_GAS.gs
-// 3. Reload spreadsheet
+// Ou trocar diretamente
+// 1. Renomear INTEGRACAO_HTML_GAS.gs → INTEGRACAO_HTML_GAS_V1_BACKUP.gs
+// 2. Renomear INTEGRACAO_HTML_GAS_V2.gs → INTEGRACAO_HTML_GAS.gs
+// 3. Recarregar planilha
 ```
 
-### 4.2 Update Triggers
+### 4.2 Atualizar Gatilhos
 
-Recreate triggers for V2:
+Recriar gatilhos para V2:
 
 ```javascript
 function configurarTriggers() {
-  // Remove old triggers
+  // Remover gatilhos antigos
   const triggers = ScriptApp.getProjectTriggers();
   triggers.forEach(trigger => {
     ScriptApp.deleteTrigger(trigger);
   });
   
-  // Create new triggers
+  // Criar novos gatilhos
   ScriptApp.newTrigger('onFormSubmit')
     .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
     .onFormSubmit()
     .create();
   
-  Logger.log('✅ Triggers configured');
+  Logger.log('✅ Gatilhos configurados');
 }
 ```
 
-### 4.3 Clear Cache
+### 4.3 Limpar Cache
 
 ```javascript
 function limparCacheAposMigracao() {
   CacheManager.clearAll();
-  Logger.log('✅ Cache cleared');
+  Logger.log('✅ Cache limpo');
 }
 ```
 
-### 4.4 Notify Users
+### 4.4 Notificar Usuários
 
-Send notification email:
+Enviar email de notificação:
 
 ```javascript
 function notificarUsuariosMigracao() {
@@ -370,20 +370,20 @@ function notificarUsuariosMigracao() {
 
 ---
 
-## Phase 5: Cleanup (Week 5)
+## Fase 5: Limpeza (Semana 5)
 
-### 5.1 Remove V1 Code
+### 5.1 Remover Código V1
 
-After 1 week of stable V2 operation:
+Após 1 semana de operação estável da V2:
 
 ```javascript
-// In Apps Script Editor
-1. Verify V2 is working correctly
-2. Delete INTEGRACAO_HTML_GAS_V1_BACKUP.gs
-3. Keep one final backup externally
+// No Editor do Apps Script
+1. Verificar se a V2 está funcionando corretamente
+2. Excluir INTEGRACAO_HTML_GAS_V1_BACKUP.gs
+3. Manter um backup final externamente
 ```
 
-### 5.2 Archive Migration Logs
+### 5.2 Arquivar Logs de Migração
 
 ```javascript
 function arquivarLogsMigracao() {
@@ -392,268 +392,268 @@ function arquivarLogsMigracao() {
   
   if (!sheet) return;
   
-  // Export to Drive
+  // Exportar para o Drive
   const folder = DriveApp.getFolderById(CONFIG_CONTRATOS.pastaRaizId);
   const fileName = `Migration_Logs_${new Date().toISOString()}.csv`;
   
-  // Export logic here
+  // Lógica de exportação aqui
   
-  Logger.log('✅ Logs archived');
+  Logger.log('✅ Logs arquivados');
 }
 ```
 
-### 5.3 Update Documentation
+### 5.3 Atualizar Documentação
 
-- [ ] Update IMPLEMENTATION_NOTES.md
-- [ ] Update user guides
-- [ ] Document new features
-- [ ] Update training materials
+- [ ] Atualizar IMPLEMENTATION_NOTES.md
+- [ ] Atualizar guias de usuário
+- [ ] Documentar novas funcionalidades
+- [ ] Atualizar materiais de treinamento
 
 ---
 
-## Rollback Procedure
+## Procedimento de Rollback
 
-If critical issues occur, immediately rollback:
+Se ocorrerem problemas críticos, faça rollback imediatamente:
 
-### Emergency Rollback Steps
+### Passos de Rollback de Emergência
 
 ```javascript
-// 1. Disable V2
+// 1. Desabilitar V2
 setScriptProperty('USE_V2', 'false');
 
-// 2. Or rename files back
+// 2. Ou renomear arquivos de volta
 // INTEGRACAO_HTML_GAS.gs → INTEGRACAO_HTML_GAS_V2_FAILED.gs
 // INTEGRACAO_HTML_GAS_V1_BACKUP.gs → INTEGRACAO_HTML_GAS.gs
 
-// 3. Reload spreadsheet
-// Extensions → Apps Script → Deploy → Test deployments
+// 3. Recarregar planilha
+// Extensões → Apps Script → Implantar → Testar implantações
 
-// 4. Notify team
-// Send email about rollback
+// 4. Notificar equipe
+// Enviar email sobre o rollback
 
-// 5. Document issue
-// Create detailed bug report
+// 5. Documentar problema
+// Criar relatório detalhado do bug
 ```
 
-### Rollback Criteria
+### Critérios de Rollback
 
-Rollback immediately if:
-- ❌ Data corruption detected
-- ❌ Critical functionality broken
-- ❌ Performance worse than V1
-- ❌ Security vulnerability discovered
-- ❌ User complaints > 20% of users
+Fazer rollback imediatamente se:
+- ❌ Corrupção de dados detectada
+- ❌ Funcionalidade crítica quebrada
+- ❌ Desempenho pior que V1
+- ❌ Vulnerabilidade de segurança descoberta
+- ❌ Reclamações de usuários > 20% dos usuários
 
 ---
 
-## Troubleshooting
+## Solução de Problemas
 
-### Issue: "getScriptProperty is not defined"
+### Problema: "getScriptProperty is not defined"
 
-**Solution:**
+**Solução:**
 ```javascript
-// Ensure V2 file is loaded
-// Check Apps Script → Files list
-// Verify no syntax errors in V2
+// Garantir que o arquivo V2 está carregado
+// Verificar Apps Script → Lista de arquivos
+// Verificar se não há erros de sintaxe na V2
 ```
 
-### Issue: "Script Properties not loading"
+### Problema: "Script Properties não carregam"
 
-**Solution:**
+**Solução:**
 ```javascript
-// Verify properties are set
-// Apps Script → Project Settings → Script Properties
-// Check property names match exactly (case-sensitive)
+// Verificar se as propriedades estão definidas
+// Apps Script → Configurações do projeto → Script Properties
+// Verificar se os nomes das propriedades correspondem exatamente (case-sensitive)
 ```
 
-### Issue: "Permission denied"
+### Problema: "Permissão negada"
 
-**Solution:**
+**Solução:**
 ```javascript
-// Reauthorize script
-// Run any function → Review Permissions → Allow
+// Reautorizar o script
+// Executar qualquer função → Revisar Permissões → Permitir
 ```
 
-### Issue: "Cache errors"
+### Problema: "Erros de cache"
 
-**Solution:**
+**Solução:**
 ```javascript
-// Clear cache manually
+// Limpar cache manualmente
 CacheManager.clearAll();
 
-// Or disable cache temporarily
-// Comment out cache.get() calls
+// Ou desabilitar cache temporariamente
+// Comentar chamadas cache.get()
 ```
 
-### Issue: "Performance not improved"
+### Problema: "Desempenho não melhorou"
 
-**Solution:**
+**Solução:**
 ```javascript
-// Check cache is working
+// Verificar se o cache está funcionando
 const cached = CacheManager.get('test');
-Logger.log('Cache working: ' + (cached !== null));
+Logger.log('Cache funcionando: ' + (cached !== null));
 
-// Verify no duplicate V1 calls
-// Search for @deprecated functions
+// Verificar se não há chamadas duplicadas da V1
+// Procurar por funções @deprecated
 ```
 
 ---
 
-## Validation Checklist
+## Checklist de Validação
 
-After migration, verify:
+Após a migração, verificar:
 
-- [ ] All forms submissions sync correctly
-- [ ] Contracts generate without errors
-- [ ] Emails send successfully
-- [ ] Dashboard loads in <3 seconds
-- [ ] No sensitive data in logs
-- [ ] Cache is functioning
-- [ ] Error handling works
-- [ ] All menu items accessible
-- [ ] No JavaScript errors in console
-- [ ] Triggers are active
-- [ ] Script Properties are secure
-- [ ] Backup is current
-
----
-
-## Performance Benchmarks
-
-### Expected V2 Performance
-
-| Operation | V1 Time | V2 Target | V2 Actual |
-|-----------|---------|-----------|-----------|
-| Dashboard load | 12s | 2s | ___s |
-| Search tenant | 3s | 0.5s | ___s |
-| Generate contract | 4s | 1.5s | ___s |
-| Send email | 3s | 2s | ___s |
-| Import form | 7s | 2s | ___s |
-
-Fill in "V2 Actual" column during testing.
+- [ ] Todas as submissões de formulários sincronizam corretamente
+- [ ] Contratos são gerados sem erros
+- [ ] Emails são enviados com sucesso
+- [ ] Dashboard carrega em <3 segundos
+- [ ] Nenhum dado sensível nos logs
+- [ ] Cache está funcionando
+- [ ] Tratamento de erros funciona
+- [ ] Todos os itens de menu acessíveis
+- [ ] Nenhum erro JavaScript no console
+- [ ] Gatilhos estão ativos
+- [ ] Script Properties estão seguras
+- [ ] Backup está atualizado
 
 ---
 
-## Support
+## Benchmarks de Desempenho
 
-### Getting Help
+### Desempenho Esperado da V2
 
-**Documentation:**
-- REVIEW_INTEGRACAO_HTML_GAS.md - Complete code review
-- IMPLEMENTATION_NOTES.md - System overview
-- This file (MIGRATION_GUIDE.md) - Migration instructions
+| Operação | Tempo V1 | Meta V2 | V2 Real |
+|----------|----------|---------|---------|
+| Carregar dashboard | 12s | 2s | ___s |
+| Buscar inquilino | 3s | 0.5s | ___s |
+| Gerar contrato | 4s | 1.5s | ___s |
+| Enviar email | 3s | 2s | ___s |
+| Importar formulário | 7s | 2s | ___s |
 
-**Contact:**
-- Technical Support: eng.diogoj@gmail.com
-- System Issues: Create issue in repository
-- Emergency: [Contact details]
-
-### Common Questions
-
-**Q: Do I need to retrain users?**  
-A: No, V2 maintains the same interface and functionality.
-
-**Q: Will my data be affected?**  
-A: No, V2 reads/writes data the same way as V1.
-
-**Q: How long does migration take?**  
-A: 4-5 weeks for complete migration with testing.
-
-**Q: Can I revert to V1 after full deployment?**  
-A: Yes, for up to 1 month after deployment.
-
-**Q: What if Script Properties are lost?**  
-A: Keep backup of all properties in secure document.
+Preencha a coluna "V2 Real" durante os testes.
 
 ---
 
-## Migration Timeline
+## Suporte
+
+### Obtendo Ajuda
+
+**Documentação:**
+- REVIEW_INTEGRACAO_HTML_GAS.md - Revisão completa do código
+- IMPLEMENTATION_NOTES.md - Visão geral do sistema
+- Este arquivo (MIGRATION_GUIDE.md) - Instruções de migração
+
+**Contato:**
+- Suporte Técnico: eng.diogoj@gmail.com
+- Problemas do Sistema: Criar issue no repositório
+- Emergência: [Detalhes de contato]
+
+### Perguntas Frequentes
+
+**P: Preciso retreinar os usuários?**  
+R: Não, a V2 mantém a mesma interface e funcionalidade.
+
+**P: Meus dados serão afetados?**  
+R: Não, a V2 lê/escreve dados da mesma forma que a V1.
+
+**P: Quanto tempo leva a migração?**  
+R: 4-5 semanas para migração completa com testes.
+
+**P: Posso reverter para V1 após a implantação completa?**  
+R: Sim, por até 1 mês após a implantação.
+
+**P: E se as Script Properties forem perdidas?**  
+R: Mantenha backup de todas as propriedades em documento seguro.
+
+---
+
+## Cronograma de Migração
 
 ```
-Week 1: Preparation
-├── Day 1-2: Setup dev environment
-├── Day 3-4: Configure Script Properties
-└── Day 5: Initial testing
+Semana 1: Preparação
+├── Dia 1-2: Configurar ambiente de desenvolvimento
+├── Dia 3-4: Configurar Script Properties
+└── Dia 5: Testes iniciais
 
-Week 2: Testing
-├── Day 1-2: Unit tests
-├── Day 3-4: Integration tests
-└── Day 5: Performance tests
+Semana 2: Testes
+├── Dia 1-2: Testes unitários
+├── Dia 3-4: Testes de integração
+└── Dia 5: Testes de desempenho
 
-Week 3: Gradual Migration
-├── Day 1-2: Parallel running
-├── Day 3-4: Feature flags
-└── Day 5: Monitoring
+Semana 3: Migração Gradual
+├── Dia 1-2: Execução em paralelo
+├── Dia 3-4: Feature flags
+└── Dia 5: Monitoramento
 
-Week 4: Full Deployment
-├── Day 1: Enable V2 globally
-├── Day 2-3: Monitor closely
-├── Day 4: Update triggers
-└── Day 5: Notify users
+Semana 4: Implantação Completa
+├── Dia 1: Habilitar V2 globalmente
+├── Dia 2-3: Monitorar de perto
+├── Dia 4: Atualizar gatilhos
+└── Dia 5: Notificar usuários
 
-Week 5: Cleanup
-├── Day 1-2: Remove V1 code
-├── Day 3: Archive logs
-└── Day 4-5: Update documentation
+Semana 5: Limpeza
+├── Dia 1-2: Remover código V1
+├── Dia 3: Arquivar logs
+└── Dia 4-5: Atualizar documentação
 ```
 
 ---
 
-## Success Criteria
+## Critérios de Sucesso
 
-Migration is successful when:
+A migração é bem-sucedida quando:
 
-1. ✅ **All functionality working**
-   - Forms sync automatically
-   - Contracts generate correctly
-   - Emails send successfully
-   - Dashboard displays data
+1. ✅ **Toda funcionalidade funcionando**
+   - Formulários sincronizam automaticamente
+   - Contratos são gerados corretamente
+   - Emails são enviados com sucesso
+   - Dashboard exibe os dados
 
-2. ✅ **Performance improved**
-   - Load times reduced by >50%
-   - No timeout errors
-   - Smooth user experience
+2. ✅ **Desempenho melhorado**
+   - Tempos de carregamento reduzidos em >50%
+   - Nenhum erro de timeout
+   - Experiência do usuário fluida
 
-3. ✅ **Security enhanced**
-   - No sensitive data in code
-   - Script Properties configured
-   - Access logs show no issues
+3. ✅ **Segurança aprimorada**
+   - Nenhum dado sensível no código
+   - Script Properties configuradas
+   - Logs de acesso sem problemas
 
-4. ✅ **Stability maintained**
-   - Zero critical bugs for 1 week
-   - Error rate < 1%
-   - User satisfaction high
+4. ✅ **Estabilidade mantida**
+   - Zero bugs críticos por 1 semana
+   - Taxa de erro < 1%
+   - Satisfação do usuário alta
 
-5. ✅ **Documentation complete**
-   - All guides updated
-   - Team trained
-   - Support ready
+5. ✅ **Documentação completa**
+   - Todos os guias atualizados
+   - Equipe treinada
+   - Suporte pronto
 
 ---
 
-## Next Steps After Migration
+## Próximos Passos Após a Migração
 
-1. **Monitor Performance**
-   - Track execution times
-   - Review error logs daily
-   - Collect user feedback
+1. **Monitorar Desempenho**
+   - Rastrear tempos de execução
+   - Revisar logs de erro diariamente
+   - Coletar feedback dos usuários
 
-2. **Optimize Further**
-   - Identify bottlenecks
-   - Implement additional caching
-   - Refine error handling
+2. **Otimizar Ainda Mais**
+   - Identificar gargalos
+   - Implementar cache adicional
+   - Refinar tratamento de erros
 
-3. **Enhance Features**
-   - Add new functionality
-   - Improve user interface
-   - Expand automation
+3. **Aprimorar Funcionalidades**
+   - Adicionar novas funcionalidades
+   - Melhorar interface do usuário
+   - Expandir automação
 
-4. **Security Audit**
-   - Regular security reviews
-   - Update dependencies
-   - Penetration testing
+4. **Auditoria de Segurança**
+   - Revisões de segurança regulares
+   - Atualizar dependências
+   - Testes de penetração
 
 ---
 
 © 2026 BASE250 - Sistema de Gestão de Imóveis
-**Version 2.0 Migration Guide**
+**Guia de Migração Versão 2.0**
