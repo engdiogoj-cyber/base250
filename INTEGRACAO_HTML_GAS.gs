@@ -44,10 +44,26 @@ function getScriptPropertySafe(key, defaultValue = '') {
 // Apps Script → Projeto → Configurações → Propriedades do script
 // Veja MIGRATION_GUIDE.md para lista completa de propriedades necessárias
 
+/**
+ * Verifica se as configurações obrigatórias estão definidas
+ * @returns {boolean} true se configurado corretamente
+ */
+function verificarConfiguracaoObrigatoria() {
+  var adminEmail = getScriptPropertySafe('ADMIN_EMAIL', '');
+  var propEmail = getScriptPropertySafe('PROPRIETARIO_EMAIL', '');
+  var propNome = getScriptPropertySafe('PROPRIETARIO_NOME', '');
+  
+  if (!adminEmail || !propEmail || !propNome) {
+    return false;
+  }
+  return true;
+}
+
 const CONFIG = {
   // Emails - Configure via Script Properties: ADMIN_EMAIL, PROPRIETARIO_EMAIL
-  adminEmail: getScriptPropertySafe('ADMIN_EMAIL', 'configure@scriptproperties.com'),
-  proprietarioEmail: getScriptPropertySafe('PROPRIETARIO_EMAIL', 'configure@scriptproperties.com'),
+  // AVISO: Estes valores são placeholders. Configure via Script Properties antes de usar.
+  adminEmail: getScriptPropertySafe('ADMIN_EMAIL', ''),
+  proprietarioEmail: getScriptPropertySafe('PROPRIETARIO_EMAIL', ''),
   
   // Proprietário - Dados sensíveis devem ser configurados via Script Properties
   proprietario: {
@@ -466,16 +482,35 @@ function requireRateLimit(operation) {
 }
 
 // =====================================================
-// MÓDULO DE SEGURANÇA V2 - DATA ENCRYPTION
+// MÓDULO DE SEGURANÇA V2 - DATA OBFUSCATION
 // =====================================================
 
 /**
- * Encripta dados sensíveis para armazenamento
- * Usa encoding Base64 com ofuscação simples
- * NOTA: Para produção com dados muito sensíveis, considere
- * integração com Google Cloud KMS ou similar
- * @param {string} data - Dados para encriptar
- * @returns {string} Dados encriptados
+ * AVISO IMPORTANTE DE SEGURANÇA:
+ * Esta implementação usa Base64 com ofuscação simples, que NÃO é criptografia verdadeira.
+ * Base64 é facilmente reversível e fornece apenas ofuscação básica.
+ * 
+ * Para dados altamente sensíveis em produção, implemente uma das seguintes soluções:
+ * 1. Google Cloud KMS (Key Management Service)
+ * 2. AWS KMS ou Azure Key Vault
+ * 3. Biblioteca de criptografia AES-256
+ * 
+ * Esta implementação é adequada para:
+ * - Ofuscação básica de dados em logs
+ * - Prevenção de visualização casual
+ * - Ambientes de desenvolvimento/teste
+ * 
+ * NÃO use para:
+ * - Senhas ou credenciais de API
+ * - Dados financeiros sensíveis
+ * - Conformidade com regulamentações rigorosas
+ */
+
+/**
+ * Ofusca dados sensíveis para armazenamento
+ * NOTA: Isso é ofuscação, não criptografia verdadeira
+ * @param {string} data - Dados para ofuscar
+ * @returns {string} Dados ofuscados
  */
 function encryptData(data) {
   if (!data) return '';
@@ -486,20 +521,20 @@ function encryptData(data) {
     var encoded = Utilities.base64Encode(combined, Utilities.Charset.UTF_8);
     return 'ENC:' + encoded;
   } catch (e) {
-    console.error('Erro ao encriptar dados: ' + e.message);
+    console.error('Erro ao ofuscar dados: ' + e.message);
     return data;
   }
 }
 
 /**
- * Decripta dados previamente encriptados
- * @param {string} encryptedData - Dados encriptados
+ * Deofusca dados previamente ofuscados
+ * @param {string} encryptedData - Dados ofuscados
  * @returns {string} Dados originais
  */
 function decryptData(encryptedData) {
   if (!encryptedData) return '';
   
-  // Verifica se dados estão encriptados
+  // Verifica se dados estão ofuscados
   if (!encryptedData.startsWith('ENC:')) {
     return encryptedData;
   }
@@ -516,7 +551,7 @@ function decryptData(encryptedData) {
     
     return decoded;
   } catch (e) {
-    console.error('Erro ao decriptar dados: ' + e.message);
+    console.error('Erro ao deofuscar dados: ' + e.message);
     return encryptedData;
   }
 }
