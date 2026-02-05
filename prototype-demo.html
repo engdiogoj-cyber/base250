@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASE250 - Interactive Platform Prototype</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #1565c0; --secondary: #2e7d32; --warning: #f57c00;
+            --danger: #d32f2f; --success: #388e3c; --bg: #f5f5f5;
+            --sidebar: #263238; --card: #ffffff; --text: #333;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); }
+        
+        .header { background: var(--primary); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        
+        .nav { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: center; flex-wrap: wrap; padding: 10px; position: sticky; top: 0; z-index: 100; }
+        .nav-item { padding: 12px 24px; margin: 5px; background: var(--bg); border: 2px solid transparent; border-radius: 5px; cursor: pointer; transition: all 0.3s; font-size: 14px; font-weight: 500; }
+        .nav-item:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        .nav-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .section { display: none; animation: fadeIn 0.5s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: var(--card); border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .card h2 { color: var(--primary); margin-bottom: 15px; font-size: 22px; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        
+        .diagram { background: white; border: 2px solid #ddd; border-radius: 8px; padding: 30px; margin: 20px 0; overflow-x: auto; }
+        .diagram pre { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.5; color: var(--text); }
+        
+        .feature-box { background: linear-gradient(135deg, var(--primary), #1976d2); color: white; padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .feature-box h3 { margin-bottom: 10px; }
+        
+        .footer { background: var(--sidebar); color: white; text-align: center; padding: 20px; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏢 BASE250 Platform - Interactive Prototype</h1>
+        <p>Complete Design & Architecture Demonstration</p>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-item active" onclick="showSection('intro')">📋 Introduction</div>
+        <div class="nav-item" onclick="showSection('arch')">🏗️ Architecture</div>
+        <div class="nav-item" onclick="showSection('features')">✨ Features</div>
+        <div class="nav-item" onclick="showSection('tech')">🔧 Technology</div>
+        <div class="nav-item" onclick="showSection('docs')">📚 Documentation</div>
+    </nav>
+
+    <div class="container">
+        <div id="intro" class="section active">
+            <div class="card">
+                <h2>Welcome to BASE250 Platform Design</h2>
+                <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+                    This interactive prototype demonstrates the complete design and architecture of the BASE250 
+                    property management platform. The system provides a <strong>zero-cost solution</strong> for 
+                    managing rental properties using Google Workspace tools.
+                </p>
+                
+                <div class="feature-box">
+                    <h3>🎯 Project Goal</h3>
+                    <p>Create a complete property management platform that automates tenant registration, 
+                    contract generation, financial control, and property advertising with ZERO monthly cost.</p>
+                </div>
+
+                <div class="feature-box" style="background: linear-gradient(135deg, var(--secondary), #43a047);">
+                    <h3>�� Total Cost</h3>
+                    <p style="font-size: 32px; font-weight: bold;">R$ 0,00/month</p>
+                    <p>Annual Savings: R$ 5,280 compared to traditional solutions</p>
+                </div>
+
+                <div class="feature-box" style="background: linear-gradient(135deg, var(--warning), #fb8c00);">
+                    <h3>📊 Implementation Status</h3>
+                    <p style="font-size: 32px; font-weight: bold;">90% Complete</p>
+                    <p>Phases 1-5 complete, Phase 6 (testing) in progress</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Six Core Modules</h2>
+                <div class="diagram">
+                    <pre>
+1. REGISTRATION SYSTEM    →  Collect tenant data via Google Forms
+2. CONTRACT CREATION      →  Auto-generate PDFs from templates  
+3. ADMIN DASHBOARD        →  Web interface for all management
+4. FILE STORAGE          →  Organized Google Drive structure
+5. PUBLIC LISTING        →  Website to advertise properties
+6. FINANCIAL CONTROL     →  Track payments and send reminders</pre>
+                </div>
+            </div>
+        </div>
+
+        <div id="arch" class="section">
+            <div class="card">
+                <h2>System Architecture</h2>
+                <div class="diagram">
+                    <pre>
+┌─────────────────────────────────────────────────────────┐
+│                   BASE250 PLATFORM                       │
+└─────────────────────────────────────────────────────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+   ┌─────▼────┐    ┌────▼────┐    ┌────▼─────┐
+   │ PUBLIC   │    │ FORMS   │    │  ADMIN   │
+   │ WEBSITE  │    │ INPUT   │    │DASHBOARD │
+   └─────┬────┘    └────┬────┘    └────┬─────┘
+         │              │              │
+         └──────────────┼──────────────┘
+                        │
+              ┌─────────▼─────────┐
+              │ GOOGLE APPS       │
+              │ SCRIPT (Backend)  │
+              └─────────┬─────────┘
+                        │
+     ┌──────────────────┼──────────────────┐
+     │                  │                  │
+┌────▼────┐      ┌──────▼──────┐    ┌─────▼────┐
+│ GOOGLE  │      │   GOOGLE    │    │  GOOGLE  │
+│ SHEETS  │      │    DOCS     │    │  DRIVE   │
+│(Database)      │ (Templates) │    │ (Storage)│
+└─────────┘      └─────────────┘    └──────────┘</pre>
+                </div>
+            </div>
+        </div>
+
+        <div id="features" class="section">
+            <div class="card">
+                <h2>Complete Feature Set</h2>
+                <div class="feature-box"><strong>✅ Registration:</strong> Google Forms with document upload</div>
+                <div class="feature-box"><strong>✅ Contracts:</strong> Automatic PDF generation from templates</div>
+                <div class="feature-box"><strong>✅ Dashboard:</strong> Full CRUD for tenants and apartments</div>
+                <div class="feature-box"><strong>✅ Storage:</strong> 15GB free Drive with auto-organization</div>
+                <div class="feature-box"><strong>✅ Listing:</strong> Public website on GitHub Pages</div>
+                <div class="feature-box"><strong>✅ Financial:</strong> Payment tracking with auto-reminders</div>
+            </div>
+        </div>
+
+        <div id="tech" class="section">
+            <div class="card">
+                <h2>Technology Stack</h2>
+                <div class="diagram">
+                    <pre>
+COMPONENT          TECHNOLOGY              COST
+─────────────────────────────────────────────────
+Backend            Google Apps Script      FREE
+Database           Google Sheets           FREE  
+Storage            Google Drive (15GB)     FREE
+Forms              Google Forms            FREE
+Templates          Google Docs             FREE
+Email              Gmail API               FREE
+Hosting            GitHub Pages            FREE
+Frontend           HTML/CSS/JavaScript     FREE
+─────────────────────────────────────────────────
+TOTAL MONTHLY COST                        R$ 0</pre>
+                </div>
+            </div>
+        </div>
+
+        <div id="docs" class="section">
+            <div class="card">
+                <h2>Complete Documentation Suite</h2>
+                <p style="margin-bottom: 20px;">The platform includes 160+ pages of comprehensive documentation:</p>
+                
+                <div class="feature-box">
+                    <h3>📋 PLATFORM_DESIGN.md (80+ pages)</h3>
+                    <p>Complete design document with requirements, architecture, components, and justification</p>
+                </div>
+
+                <div class="feature-box">
+                    <h3>🏗️ ARCHITECTURE_DIAGRAMS.md (50+ pages)</h3>
+                    <p>Visual diagrams, wireframes, data flows, and security framework</p>
+                </div>
+
+                <div class="feature-box">
+                    <h3>📚 DESIGN_INDEX.md</h3>
+                    <p>Navigation guide and quick reference for all documentation</p>
+                </div>
+
+                <div class="feature-box">
+                    <h3>📖 README.md (20+ pages)</h3>
+                    <p>Installation guide, configuration, and user documentation</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>BASE250 Platform - Design Complete</strong></p>
+        <p>© 2026 BASE250 | Zero-Cost Property Management Solution</p>
+        <p style="margin-top: 10px; font-size: 13px;">View the complete documentation in the repository</p>
+    </div>
+
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
