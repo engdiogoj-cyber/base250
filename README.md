@@ -264,6 +264,36 @@ M10 - TERMINATION → Encerramento de contratos
 4. Manter backup atualizado
 5. Testar em ambiente dev antes de produção
 
+## 💰 Domínio Personalizado e HTTPS
+
+### Custos Opcionais para Profissionalizar o Sistema
+
+O BASE250 funciona gratuitamente com Google Apps Script, mas você pode adicionar um domínio personalizado e HTTPS para maior profissionalismo:
+
+#### Estimativa de Custos
+
+| Item | Custo | Provedor Recomendado |
+|------|-------|---------------------|
+| **Domínio .com.br** | R$ 40/ano | [Registro.br](https://registro.br/) (oficial) |
+| **SSL/HTTPS** | **Gratuito** | [Let's Encrypt](https://letsencrypt.org/) ou [Cloudflare](https://www.cloudflare.com/) |
+| **Hospedagem** | **Gratuito** | Google Apps Script (continua gratuito) |
+| **CDN + Proteção DDoS** | **Gratuito** | Cloudflare (plano Free) |
+
+**Total anual: R$ 40,00** (apenas o domínio)
+
+#### Benefícios
+
+- ✅ URL profissional (ex: `https://app.base250.com.br`)
+- ✅ Certificado SSL/TLS gratuito
+- ✅ Proteção contra DDoS
+- ✅ CDN global para melhor performance
+- ✅ Maior credibilidade com usuários
+
+#### Guia Completo
+
+Para instruções detalhadas de implementação, custos e configuração, consulte:
+📘 **[COST_ESTIMATES.md](./COST_ESTIMATES.md)** - Guia completo de custos e implementação de domínio + HTTPS
+
 ## 🐛 Troubleshooting
 
 ### Problemas Comuns
@@ -324,7 +354,10 @@ R: Google Sheets → Arquivo → Fazer cópia. Apps Script → Exportar como ZIP
 R: Sim, o sistema é modular e pode ser adaptado.
 
 **P: Há custos?**
-R: Não, usa apenas ferramentas gratuitas do Google (dentro dos limites).
+R: O sistema BASE250 usa ferramentas gratuitas do Google. Custos opcionais:
+- Domínio .com.br: R$ 40/ano (via Registro.br)
+- HTTPS: Gratuito (Let's Encrypt ou Cloudflare)
+- Veja detalhes completos em [COST_ESTIMATES.md](./COST_ESTIMATES.md)
 
 ## 📊 Status do Projeto
 
@@ -377,6 +410,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 - [Review Completo](./REVIEW_INTEGRACAO_HTML_GAS.md)
 - [Guia de Migração](./MIGRATION_GUIDE.md)
 - [Notas de Implementação](./IMPLEMENTATION_NOTES.md)
+- [Estimativa de Custos - Domínio e HTTPS](./COST_ESTIMATES.md) 💰
 - [Código V1](./INTEGRACAO_HTML_GAS.gs)
 - [Código V2](./INTEGRACAO_HTML_GAS_V2.gs) ⭐
 
