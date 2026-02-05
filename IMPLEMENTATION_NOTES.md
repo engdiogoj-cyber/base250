@@ -243,7 +243,7 @@ Required Properties:
 ### Support
 
 For issues or questions:
-- Technical: eng.diogoj@gmail.com
+- Technical: suporte@base250.com.br
 - System: BASE250 - Residencial Itacorubi
 
 ---

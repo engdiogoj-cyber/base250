@@ -89,19 +89,19 @@ validarEmail() - Lines 176, 1277
 **Severity:** HIGH (Security/Privacy)  
 **Impact:** Data breach, LGPD/GDPR violation risk
 
-**Location:** Lines 20-34 (CONFIG object)
+**Location:** Lines 20-34 (CONFIG object) - EXAMPLES REDACTED
 ```javascript
 const CONFIG = {
   proprietario: {
-    nome: "JUCEMAR JOÃO DA SILVA",
-    cpf: "399.328.349-04",
-    telefone: "(48) 99935-2627",
-    email: "eng.diogoj@gmail.com",
-    endereco: "Rua Deputado Otacílio Costa, 40, Ap. 101",
+    nome: "[REDACTED]",                    // Was exposed
+    cpf: "XXX.XXX.XXX-XX",                 // Was exposed
+    telefone: "(XX) XXXXX-XXXX",           // Was exposed
+    email: "user@example.com",             // Was exposed
+    endereco: "[REDACTED]",                // Was exposed
     cidade: "Florianópolis",
     estado: "SC",
-    cep: "88030-480",
-    pix: "48999352627"
+    cep: "XXXXX-XXX",                      // Was exposed
+    pix: "XXXXXXXXXXX"                     // Was exposed
   }
 }
 ```
@@ -131,9 +131,9 @@ const CONFIG = {
 **Impact:** Maintenance burden, inflexible deployment
 
 **Locations:**
-- Line 20-21: `eng.diogoj@gmail.com`
-- Line 1134: Email notifications hardcoded
-- Line 1678: `floripamoso@gmail.com` in error handling
+- Line 20-21: Personal email addresses (now in Script Properties)
+- Line 1134: Email notifications (now configurable)
+- Line 1678: Error handling emails (now configurable)
 
 **Issues:**
 - Changing email recipients requires code modification

@@ -308,7 +308,7 @@ CacheManager.clearAll();
 
 ### Canais de Suporte
 
-- **Email:** eng.diogoj@gmail.com
+- **Email:** suporte@base250.com.br
 - **Issues:** GitHub Issues
 - **Documentação:** Ver arquivos .md no repositório
 
@@ -329,7 +329,7 @@ R: Não, usa apenas ferramentas gratuitas do Google (dentro dos limites).
 ## 📊 Status do Projeto
 
 - ✅ V1: Funcional (com issues conhecidos)
-- ✅ V2: Em desenvolvimento (starter implementado)
+- ✅ V2: Lançado com segurança aprimorada
 - 🔄 Migração: Documentada e pronta para execução
 - 📝 Documentação: Completa
 
@@ -338,7 +338,11 @@ R: Não, usa apenas ferramentas gratuitas do Google (dentro dos limites).
 ### Próximas Versões
 
 **V2.1 (Q1 2026)**
-- [ ] Completar todos os módulos
+- [x] Completar todos os módulos
+- [x] Remover PII do código fonte
+- [x] Input sanitization
+- [x] Access control
+- [x] Audit logs
 - [ ] Testes automatizados
 - [ ] CI/CD pipeline
 
@@ -358,7 +362,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 👥 Autores
 
-- **Diogo** - Desenvolvimento inicial - eng.diogoj@gmail.com
+- **Equipe BASE250** - Desenvolvimento
 
 ## 🙏 Agradecimentos
 

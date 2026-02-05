@@ -117,11 +117,11 @@ Added V2 section with:
 ### V1 Security Issues ❌
 
 ```javascript
-// EXPOSED in source code:
-cpf: '399.328.349-04'           // ❌ Personal ID
-telefone: '(48) 99935-2627'     // ❌ Phone number
-pix: '48999352627'              // ❌ Financial data
-nome: 'JUCEMAR JOÃO DA SILVA'   // ❌ Full name
+// EXPOSED in source code (EXAMPLES - REDACTED):
+cpf: 'XXX.XXX.XXX-XX'           // ❌ Personal ID was hardcoded
+telefone: '(XX) XXXXX-XXXX'     // ❌ Phone number was hardcoded
+pix: 'XXXXXXXXXXX'              // ❌ Financial data was hardcoded
+nome: '[REDACTED]'              // ❌ Full name was hardcoded
 ```
 
 **Risks:**
@@ -475,7 +475,7 @@ Migration is successful when:
 
 ### Contact
 
-- **Technical:** eng.diogoj@gmail.com
+- **Technical:** suporte@base250.com.br
 - **Repository:** github.com/engdiogoj-cyber/base250
 - **Issues:** GitHub Issues
 
