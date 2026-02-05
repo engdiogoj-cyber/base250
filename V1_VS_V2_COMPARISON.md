@@ -76,13 +76,13 @@ function validarDadosCompletos(dadosImportados, linhaContrato) {
 
 #### V1: Exposed Sensitive Data
 ```javascript
-// Lines 20-34 - SECURITY RISK!
+// Lines 20-34 - SECURITY RISK! (EXAMPLES REDACTED)
 const CONFIG = {
   proprietario: {
-    nome: 'JUCEMAR JOÃO DA SILVA',      // ❌ PII exposed
-    cpf: '399.328.349-04',              // ❌ CPF in source
-    telefone: '(48) 99935-2627',        // ❌ Phone public
-    pix: '48999352627',                 // ❌ Financial data
+    nome: '[REDACTED]',                   // ❌ PII was exposed
+    cpf: 'XXX.XXX.XXX-XX',                // ❌ CPF was in source
+    telefone: '(XX) XXXXX-XXXX',          // ❌ Phone was public
+    pix: 'XXXXXXXXXXX',                   // ❌ Financial data exposed
     // ... more sensitive data
   }
 };

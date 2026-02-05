@@ -544,9 +544,9 @@ Fill in "V2 Actual" column during testing.
 - This file (MIGRATION_GUIDE.md) - Migration instructions
 
 **Contact:**
-- Technical Support: eng.diogoj@gmail.com
+- Technical Support: suporte@base250.com.br
 - System Issues: Create issue in repository
-- Emergency: [Contact details]
+- Emergency: Create urgent GitHub issue
 
 ### Common Questions
 

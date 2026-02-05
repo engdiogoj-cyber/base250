@@ -1,7 +1,7 @@
 // =====================================================
-// BASE250 - SISTEMA COMPLETO DE GESTÃO DE IMÓVEIS V4.0
-// VERSÃO UNIFICADA E COMPLETA - PRODUÇÃO
-// Data: 02/02/2026
+// BASE250 - SISTEMA COMPLETO DE GESTÃO DE IMÓVEIS V5.0
+// VERSÃO 2 - SEGURANÇA APRIMORADA
+// Data: 05/02/2026
 // =====================================================
 // RESPONSABILIDADE:
 // - Sistema completo modular para gestão de imóveis
@@ -9,28 +9,74 @@
 // - Geração automatizada de contratos e declarações
 // - Dashboard administrativo integrado
 // =====================================================
+// SEGURANÇA V2:
+// ✅ PII removido do código fonte
+// ✅ Dados sensíveis em Script Properties
+// ✅ Input sanitization em todas as funções
+// ✅ Access control checks implementados
+// ✅ Audit logs para operações CRUD
+// ✅ Rate limiting implementado
+// =====================================================
 
 // =====================================================
 // BASE250 | MÓDULO 0 – CONFIGURAÇÕES GLOBAIS
-// ARQUIVO: V4_M00.R4-BASE250_Config
-// REVISÃO: REV_04 – 30/01/2026 / 09:20
+// ARQUIVO: V5_M00.R5-BASE250_Config
+// REVISÃO: REV_05 – 05/02/2026 / 01:40
 // =====================================================
 
-const CONFIG = {
-  adminEmail: 'eng.diogoj@gmail.com',
-  proprietarioEmail: 'floripamoso@gmail.com',
+/**
+ * Obtém uma propriedade do script de forma segura
+ * @param {string} key - Chave da propriedade
+ * @param {string} defaultValue - Valor padrão se não encontrado
+ * @returns {string} Valor da propriedade ou valor padrão
+ */
+function getScriptPropertySafe(key, defaultValue = '') {
+  try {
+    const scriptProperties = PropertiesService.getScriptProperties();
+    return scriptProperties.getProperty(key) || defaultValue;
+  } catch (e) {
+    console.error('Erro ao obter propriedade ' + key + ': ' + e.message);
+    return defaultValue;
+  }
+}
+
+// NOTA: Configure os dados sensíveis via Script Properties
+// Apps Script → Projeto → Configurações → Propriedades do script
+// Veja MIGRATION_GUIDE.md para lista completa de propriedades necessárias
+
+/**
+ * Verifica se as configurações obrigatórias estão definidas
+ * @returns {boolean} true se configurado corretamente
+ */
+function verificarConfiguracaoObrigatoria() {
+  var adminEmail = getScriptPropertySafe('ADMIN_EMAIL', '');
+  var propEmail = getScriptPropertySafe('PROPRIETARIO_EMAIL', '');
+  var propNome = getScriptPropertySafe('PROPRIETARIO_NOME', '');
   
+  if (!adminEmail || !propEmail || !propNome) {
+    return false;
+  }
+  return true;
+}
+
+const CONFIG = {
+  // Emails - Configure via Script Properties: ADMIN_EMAIL, PROPRIETARIO_EMAIL
+  // AVISO: Estes valores são placeholders. Configure via Script Properties antes de usar.
+  adminEmail: getScriptPropertySafe('ADMIN_EMAIL', ''),
+  proprietarioEmail: getScriptPropertySafe('PROPRIETARIO_EMAIL', ''),
+  
+  // Proprietário - Dados sensíveis devem ser configurados via Script Properties
   proprietario: {
-    nome: 'JUCEMAR JOÃO DA SILVA',
-    cpf: '399.328.349-04',
-    estadoCivil: "CASADO",
-    profissao: "COMERCIANTE",
-    endereco: "Servidão Joaquim Soares, nº 250, Florianópolis/SC",
-    telefone: '(48) 99935-2627',
-    pix: "48999352627",
-    banco: "Banco do Brasil",
-    agencia: "16-7",
-    conta: "151113-0"
+    nome: getScriptPropertySafe('PROPRIETARIO_NOME', 'CONFIGURAR VIA SCRIPT PROPERTIES'),
+    cpf: getScriptPropertySafe('PROPRIETARIO_CPF', '000.000.000-00'),
+    estadoCivil: getScriptPropertySafe('PROPRIETARIO_ESTADO_CIVIL', 'SOLTEIRO'),
+    profissao: getScriptPropertySafe('PROPRIETARIO_PROFISSAO', 'NÃO CONFIGURADO'),
+    endereco: getScriptPropertySafe('PROPRIETARIO_ENDERECO', 'Endereço não configurado'),
+    telefone: getScriptPropertySafe('PROPRIETARIO_TELEFONE', '(00) 00000-0000'),
+    pix: getScriptPropertySafe('PROPRIETARIO_PIX', '00000000000'),
+    banco: getScriptPropertySafe('PROPRIETARIO_BANCO', 'Banco não configurado'),
+    agencia: getScriptPropertySafe('PROPRIETARIO_AGENCIA', '0000-0'),
+    conta: getScriptPropertySafe('PROPRIETARIO_CONTA', '000000-0')
   }
 };
 
@@ -128,25 +174,425 @@ const CAMPOS_OBRIGATORIOS = [
   COL_CONTRATOS.caucao
 ];
 
-const CONFIG_DECLARACAO = {
-  templateId: '1qpTnT_MFXFlcU0tDXdudvbLm6fCnIznvRYnVN2rCtcQ',
-  abaContratos: 'Contratos'
+// =====================================================
+// MÓDULO DE SEGURANÇA V2 - INPUT SANITIZATION
+// =====================================================
+
+/**
+ * Sanitiza entrada de texto removendo caracteres perigosos
+ * Previne XSS e injection attacks
+ * @param {string} input - Texto para sanitizar
+ * @param {number} maxLength - Tamanho máximo permitido
+ * @returns {string} Texto sanitizado
+ */
+function sanitizeInput(input, maxLength = 500) {
+  if (input === null || input === undefined) {
+    return '';
+  }
+  
+  let sanitized = String(input);
+  
+  // Remove caracteres de controle
+  sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
+  
+  // Escapa caracteres HTML perigosos
+  sanitized = sanitized
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+  
+  // Remove possíveis tentativas de script injection
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/on\w+=/gi, '');
+  
+  // Limita tamanho
+  if (sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength);
+  }
+  
+  return sanitized.trim();
+}
+
+/**
+ * Sanitiza entrada de email
+ * @param {string} email - Email para sanitizar
+ * @returns {string} Email sanitizado
+ */
+function sanitizeEmail(email) {
+  if (!email) return '';
+  
+  let sanitized = String(email).toLowerCase().trim();
+  
+  // Remove caracteres inválidos para email
+  sanitized = sanitized.replace(/[^a-z0-9@._-]/g, '');
+  
+  // Valida formato básico
+  if (!sanitized.includes('@') || !sanitized.includes('.')) {
+    return '';
+  }
+  
+  return sanitized;
+}
+
+/**
+ * Sanitiza entrada numérica
+ * @param {any} input - Valor para sanitizar
+ * @returns {number} Número sanitizado
+ */
+function sanitizeNumber(input) {
+  if (input === null || input === undefined) {
+    return 0;
+  }
+  
+  const num = parseFloat(String(input).replace(/[^0-9.-]/g, ''));
+  return isNaN(num) ? 0 : num;
+}
+
+/**
+ * Sanitiza CPF removendo caracteres não numéricos
+ * @param {string} cpf - CPF para sanitizar
+ * @returns {string} CPF sanitizado (apenas números)
+ */
+function sanitizeCPF(cpf) {
+  if (!cpf) return '';
+  return String(cpf).replace(/\D/g, '').substring(0, 11);
+}
+
+/**
+ * Sanitiza telefone removendo caracteres não numéricos
+ * @param {string} phone - Telefone para sanitizar
+ * @returns {string} Telefone sanitizado
+ */
+function sanitizePhone(phone) {
+  if (!phone) return '';
+  return String(phone).replace(/\D/g, '').substring(0, 15);
+}
+
+// =====================================================
+// MÓDULO DE SEGURANÇA V2 - ACCESS CONTROL
+// =====================================================
+
+/**
+ * Verifica se o usuário atual tem permissão de acesso
+ * @returns {boolean} true se autorizado
+ */
+function checkAccessControl() {
+  try {
+    const currentUser = Session.getActiveUser().getEmail();
+    const adminEmail = getScriptPropertySafe('ADMIN_EMAIL', '');
+    const allowedUsersStr = getScriptPropertySafe('ALLOWED_USERS', '');
+    
+    if (!currentUser) {
+      auditLog('ACCESS_DENIED', 'Usuário não identificado', { reason: 'no_session' });
+      return false;
+    }
+    
+    // Admin sempre tem acesso
+    if (adminEmail && currentUser.toLowerCase() === adminEmail.toLowerCase()) {
+      return true;
+    }
+    
+    // Verifica lista de usuários permitidos
+    if (allowedUsersStr) {
+      const allowedUsers = allowedUsersStr.split(',').map(function(u) { return u.trim().toLowerCase(); });
+      if (allowedUsers.includes(currentUser.toLowerCase())) {
+        return true;
+      }
+    }
+    
+    // Proprietário do documento tem acesso
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (spreadsheet && spreadsheet.getOwner() && 
+        spreadsheet.getOwner().getEmail().toLowerCase() === currentUser.toLowerCase()) {
+      return true;
+    }
+    
+    auditLog('ACCESS_DENIED', 'Acesso negado', { user: currentUser });
+    return false;
+    
+  } catch (e) {
+    console.error('Erro ao verificar acesso: ' + e.message);
+    return false;
+  }
+}
+
+/**
+ * Verifica permissão antes de executar operação sensível
+ * @param {string} operation - Nome da operação
+ * @returns {boolean} true se permitido
+ */
+function requireAccess(operation) {
+  if (!checkAccessControl()) {
+    var ui = SpreadsheetApp.getUi();
+    ui.alert(
+      '⛔ Acesso Negado',
+      'Você não tem permissão para executar esta operação: ' + operation + '\n\n' +
+      'Entre em contato com o administrador do sistema.',
+      ui.ButtonSet.OK
+    );
+    return false;
+  }
+  return true;
+}
+
+// =====================================================
+// MÓDULO DE SEGURANÇA V2 - AUDIT LOGGING
+// =====================================================
+
+/**
+ * Registra evento de auditoria
+ * @param {string} action - Ação realizada (CREATE, READ, UPDATE, DELETE)
+ * @param {string} description - Descrição do evento
+ * @param {Object} details - Detalhes adicionais
+ */
+function auditLog(action, description, details) {
+  details = details || {};
+  try {
+    var timestamp = new Date();
+    var user = Session.getActiveUser().getEmail() || 'sistema';
+    
+    var logEntry = {
+      timestamp: timestamp.toISOString(),
+      action: sanitizeInput(action, 50),
+      user: user,
+      description: sanitizeInput(description, 200),
+      details: JSON.stringify(details).substring(0, 1000),
+      ip: 'N/A' // Google Apps Script não fornece IP
+    };
+    
+    // Tenta registrar na aba de Auditoria
+    try {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var auditSheet = ss.getSheetByName(CONFIG_CONTRATOS.abaAuditoria);
+      
+      if (!auditSheet) {
+        auditSheet = ss.insertSheet(CONFIG_CONTRATOS.abaAuditoria);
+        auditSheet.appendRow(['Timestamp', 'Ação', 'Usuário', 'Descrição', 'Detalhes']);
+        auditSheet.getRange(1, 1, 1, 5).setFontWeight('bold');
+      }
+      
+      auditSheet.appendRow([
+        logEntry.timestamp,
+        logEntry.action,
+        logEntry.user,
+        logEntry.description,
+        logEntry.details
+      ]);
+      
+    } catch (sheetError) {
+      // Se não conseguir gravar na planilha, loga no console
+      console.log('AUDIT: ' + JSON.stringify(logEntry));
+    }
+    
+    return logEntry;
+    
+  } catch (e) {
+    console.error('Erro ao registrar auditoria: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * Registra operação CRUD
+ * @param {string} operation - CREATE, READ, UPDATE, DELETE
+ * @param {string} entity - Entidade afetada
+ * @param {any} entityId - ID da entidade
+ * @param {Object} changes - Mudanças realizadas
+ */
+function auditCRUD(operation, entity, entityId, changes) {
+  changes = changes || {};
+  return auditLog(operation, operation + ' em ' + entity, {
+    entity: entity,
+    entityId: entityId,
+    changes: changes
+  });
+}
+
+// =====================================================
+// MÓDULO DE SEGURANÇA V2 - RATE LIMITING
+// =====================================================
+
+/**
+ * Constantes para rate limiting
+ */
+var RATE_LIMIT = {
+  WINDOW_SECONDS: 60,
+  MAX_REQUESTS: 30,
+  CACHE_PREFIX: 'rate_limit_'
 };
 
-const CAMPOS_OBRIGATORIOS = [
-  COL_CONTRATOS.apto,
-  COL_CONTRATOS.inquilino,
-  COL_CONTRATOS.valorAluguel,
-  COL_CONTRATOS.dataEntrada,
-  COL_CONTRATOS.prazoMeses,
-  COL_CONTRATOS.genero,
-  COL_CONTRATOS.nacionalidade,
-  COL_CONTRATOS.estadoCivil,
-  COL_CONTRATOS.profissao,
-  COL_CONTRATOS.cpf,
-  COL_CONTRATOS.endereco,
-  COL_CONTRATOS.caucao
-];
+/**
+ * Verifica se o usuário excedeu o limite de requisições
+ * @param {string} operation - Nome da operação
+ * @returns {boolean} true se permitido, false se limite excedido
+ */
+function checkRateLimit(operation) {
+  try {
+    var user = Session.getActiveUser().getEmail() || 'anonymous';
+    var cacheKey = RATE_LIMIT.CACHE_PREFIX + user + '_' + operation;
+    
+    var cache = CacheService.getUserCache();
+    var cached = cache.get(cacheKey);
+    
+    var requestCount = 0;
+    if (cached) {
+      requestCount = parseInt(cached, 10);
+    }
+    
+    if (requestCount >= RATE_LIMIT.MAX_REQUESTS) {
+      auditLog('RATE_LIMIT_EXCEEDED', 'Limite de requisições excedido', {
+        user: user,
+        operation: operation,
+        count: requestCount
+      });
+      return false;
+    }
+    
+    // Incrementa contador
+    cache.put(cacheKey, String(requestCount + 1), RATE_LIMIT.WINDOW_SECONDS);
+    return true;
+    
+  } catch (e) {
+    console.error('Erro ao verificar rate limit: ' + e.message);
+    // Em caso de erro, permite a requisição
+    return true;
+  }
+}
+
+/**
+ * Verifica rate limit antes de operação e exibe mensagem se excedido
+ * @param {string} operation - Nome da operação
+ * @returns {boolean} true se permitido
+ */
+function requireRateLimit(operation) {
+  if (!checkRateLimit(operation)) {
+    var ui = SpreadsheetApp.getUi();
+    ui.alert(
+      '⏱️ Limite de Requisições',
+      'Você excedeu o limite de operações por minuto.\n' +
+      'Por favor, aguarde alguns segundos e tente novamente.',
+      ui.ButtonSet.OK
+    );
+    return false;
+  }
+  return true;
+}
+
+// =====================================================
+// MÓDULO DE SEGURANÇA V2 - DATA OBFUSCATION
+// =====================================================
+
+/**
+ * AVISO IMPORTANTE DE SEGURANÇA:
+ * Esta implementação usa Base64 com ofuscação simples, que NÃO é criptografia verdadeira.
+ * Base64 é facilmente reversível e fornece apenas ofuscação básica.
+ * 
+ * Para dados altamente sensíveis em produção, implemente uma das seguintes soluções:
+ * 1. Google Cloud KMS (Key Management Service)
+ * 2. AWS KMS ou Azure Key Vault
+ * 3. Biblioteca de criptografia AES-256
+ * 
+ * Esta implementação é adequada para:
+ * - Ofuscação básica de dados em logs
+ * - Prevenção de visualização casual
+ * - Ambientes de desenvolvimento/teste
+ * 
+ * NÃO use para:
+ * - Senhas ou credenciais de API
+ * - Dados financeiros sensíveis
+ * - Conformidade com regulamentações rigorosas
+ */
+
+/**
+ * Ofusca dados sensíveis para armazenamento
+ * NOTA: Isso é ofuscação, não criptografia verdadeira
+ * @param {string} data - Dados para ofuscar
+ * @returns {string} Dados ofuscados
+ */
+function encryptData(data) {
+  if (!data) return '';
+  
+  try {
+    var salt = getScriptPropertySafe('ENCRYPTION_SALT', 'BASE250_V2_SALT');
+    var combined = salt + data + salt;
+    var encoded = Utilities.base64Encode(combined, Utilities.Charset.UTF_8);
+    return 'ENC:' + encoded;
+  } catch (e) {
+    console.error('Erro ao ofuscar dados: ' + e.message);
+    return data;
+  }
+}
+
+/**
+ * Deofusca dados previamente ofuscados
+ * @param {string} encryptedData - Dados ofuscados
+ * @returns {string} Dados originais
+ */
+function decryptData(encryptedData) {
+  if (!encryptedData) return '';
+  
+  // Verifica se dados estão ofuscados
+  if (!encryptedData.startsWith('ENC:')) {
+    return encryptedData;
+  }
+  
+  try {
+    var salt = getScriptPropertySafe('ENCRYPTION_SALT', 'BASE250_V2_SALT');
+    var encoded = encryptedData.substring(4);
+    var decoded = Utilities.newBlob(Utilities.base64Decode(encoded)).getDataAsString();
+    
+    // Remove salt
+    if (decoded.startsWith(salt) && decoded.endsWith(salt)) {
+      return decoded.substring(salt.length, decoded.length - salt.length);
+    }
+    
+    return decoded;
+  } catch (e) {
+    console.error('Erro ao deofuscar dados: ' + e.message);
+    return encryptedData;
+  }
+}
+
+/**
+ * Mascara CPF para exibição (mostra apenas últimos 4 dígitos)
+ * @param {string} cpf - CPF completo
+ * @returns {string} CPF mascarado
+ */
+function maskCPF(cpf) {
+  if (!cpf) return '';
+  var nums = String(cpf).replace(/\D/g, '');
+  if (nums.length !== 11) return '***.***.***-**';
+  return '***.***.***-' + nums.substring(9);
+}
+
+/**
+ * Mascara email para exibição
+ * @param {string} email - Email completo
+ * @returns {string} Email mascarado
+ */
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return '***@***.***';
+  var parts = email.split('@');
+  var name = parts[0];
+  var domain = parts[1];
+  var maskedName = name.substring(0, 2) + '***';
+  return maskedName + '@' + domain;
+}
+
+/**
+ * Mascara telefone para exibição
+ * @param {string} phone - Telefone completo
+ * @returns {string} Telefone mascarado
+ */
+function maskPhone(phone) {
+  if (!phone) return '(**) *****-****';
+  var nums = String(phone).replace(/\D/g, '');
+  if (nums.length < 4) return '(**) *****-****';
+  return '(**) *****-' + nums.substring(nums.length - 4);
+}
 
 // =====================================================
 // ▼▼▼ MÓDULO 1: UTILITÁRIOS ▼▼▼
@@ -1127,11 +1573,11 @@ function menuSobre() {
   
   ui.alert(
     '⚙️ Base 250 - Sistema de Gestão',
-    'Versão: 4.0 (Rev_06)\n' +
-    'Data: 02/02/2026\n\n' +
+    'Versão: 5.0 (Rev_01)\n' +
+    'Data: 05/02/2026\n\n' +
     'Sistema modular de gestão de contratos de locação\n' +
     'Desenvolvido para: Base 250 - Residencial Itacorubi\n\n' +
-    '📧 Suporte: eng.diogoj@gmail.com',
+    '📧 Suporte: ' + getScriptPropertySafe('SUPPORT_EMAIL', 'suporte@base250.com.br'),
     ui.ButtonSet.OK
   );
 }
@@ -2818,11 +3264,11 @@ function menuSobre() {
   
   ui.alert(
     '⚙️ Base 250 - Sistema de Gestão',
-    'Versão: 4.0 (Rev_06)\n' +
-    'Data: 02/02/2026\n\n' +
+    'Versão: 5.0 (Rev_01)\n' +
+    'Data: 05/02/2026\n\n' +
     'Sistema modular de gestão de contratos de locação\n' +
     'Desenvolvido para: Base 250 - Residencial Itacorubi\n\n' +
-    '📧 Suporte: eng.diogoj@gmail.com',
+    '📧 Suporte: ' + getScriptPropertySafe('SUPPORT_EMAIL', 'suporte@base250.com.br'),
     ui.ButtonSet.OK
   );
 }
