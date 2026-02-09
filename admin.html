@@ -452,6 +452,11 @@
       color: var(--cor-perigo);
     }
     
+    .status-badge.danger {
+      background: #ffebee;
+      color: var(--cor-perigo);
+    }
+    
     /* ========== ALERTS ========== */
     .alert {
       padding: 12px 15px;
@@ -648,6 +653,7 @@
       <li><a href="#" onclick="showSection('apartments')"><span class="icon">🏠</span> Apartamentos</a></li>
       <li><a href="#" onclick="showSection('tenants')"><span class="icon">👥</span> Inquilinos</a></li>
       <li><a href="#" onclick="showSection('contracts')"><span class="icon">📄</span> Contratos</a></li>
+      <li><a href="#" onclick="showSection('financeiro')"><span class="icon">💰</span> Financeiro</a></li>
       <li><a href="#" onclick="showSection('notifications')"><span class="icon">🔔</span> Notificações</a></li>
       <li><a href="#" onclick="showSection('config')"><span class="icon">⚙️</span> Configurações</a></li>
       <li class="menu-separator">
@@ -882,6 +888,179 @@
                   <button class="btn btn-primary" onclick="viewContract('#002')">👁 Ver</button>
                   <button class="btn btn-secondary" onclick="editContract('#002')">✏️ Editar</button>
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ========== FINANCIAL MODULE SECTION ========== -->
+    <div id="section-financeiro" class="content-section">
+      <div class="metrics-grid" style="margin-bottom: 20px;">
+        <div class="metric-card success">
+          <div class="metric-icon">✅</div>
+          <div class="metric-value" id="metric-payments-paid">R$ 0</div>
+          <div class="metric-label">Pagamentos Recebidos</div>
+        </div>
+        
+        <div class="metric-card warning">
+          <div class="metric-icon">⏳</div>
+          <div class="metric-value" id="metric-payments-pending">R$ 0</div>
+          <div class="metric-label">Pagamentos Pendentes</div>
+        </div>
+        
+        <div class="metric-card danger">
+          <div class="metric-icon">⚠️</div>
+          <div class="metric-value" id="metric-payments-overdue">R$ 0</div>
+          <div class="metric-label">Pagamentos Atrasados</div>
+        </div>
+        
+        <div class="metric-card">
+          <div class="metric-icon">📊</div>
+          <div class="metric-value" id="metric-payments-total">R$ 0</div>
+          <div class="metric-label">Total Previsto (Mês)</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">💰 Controle de Pagamentos</h3>
+          <button class="btn btn-primary" onclick="openPaymentModal()">➕ Registrar Pagamento</button>
+        </div>
+        
+        <div class="filters">
+          <button class="filter-btn active" onclick="filterPayments('all', event)">Todos</button>
+          <button class="filter-btn" onclick="filterPayments('paid', event)">✅ Pagos</button>
+          <button class="filter-btn" onclick="filterPayments('pending', event)">⏳ Pendentes</button>
+          <button class="filter-btn" onclick="filterPayments('overdue', event)">⚠️ Atrasados</button>
+        </div>
+        
+        <div class="form-grid" style="margin: 15px 0;">
+          <div class="form-group">
+            <label class="form-label">Mês de Referência</label>
+            <select class="form-select" id="filter-payment-month" onchange="filterPaymentsByMonth()">
+              <option value="">Todos os meses</option>
+              <option value="01">Janeiro</option>
+              <option value="02">Fevereiro</option>
+              <option value="03">Março</option>
+              <option value="04">Abril</option>
+              <option value="05">Maio</option>
+              <option value="06">Junho</option>
+              <option value="07">Julho</option>
+              <option value="08">Agosto</option>
+              <option value="09">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ano</label>
+            <select class="form-select" id="filter-payment-year" onchange="filterPaymentsByMonth()">
+              <option value="">Todos</option>
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Apto</th>
+                <th>Inquilino</th>
+                <th>Referência</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Data Pagamento</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table">
+              <tr data-payment-id="1">
+                <td>101</td>
+                <td>João Silva</td>
+                <td>Fev/2026</td>
+                <td>05/02/2026</td>
+                <td>R$ 1.500,00</td>
+                <td><span class="status-badge pending">Pendente</span></td>
+                <td>-</td>
+                <td>
+                  <button class="btn btn-success" onclick="confirmPayment(1)">✅ Confirmar</button>
+                  <button class="btn btn-secondary" onclick="sendPaymentReminder(1)">📧 Lembrar</button>
+                </td>
+              </tr>
+              <tr data-payment-id="2">
+                <td>102</td>
+                <td>Maria Santos</td>
+                <td>Fev/2026</td>
+                <td>05/02/2026</td>
+                <td>R$ 1.200,00</td>
+                <td><span class="status-badge active">Pago</span></td>
+                <td>03/02/2026</td>
+                <td>
+                  <button class="btn btn-primary" onclick="viewPaymentReceipt(2)">🧾 Recibo</button>
+                </td>
+              </tr>
+              <tr data-payment-id="3">
+                <td>103</td>
+                <td>Pedro Costa</td>
+                <td>Jan/2026</td>
+                <td>05/01/2026</td>
+                <td>R$ 1.350,00</td>
+                <td><span class="status-badge danger">Atrasado</span></td>
+                <td>-</td>
+                <td>
+                  <button class="btn btn-success" onclick="confirmPayment(3)">✅ Confirmar</button>
+                  <button class="btn btn-danger" onclick="sendOverdueNotice(3)">⚠️ Notificar</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-header">
+          <h3 class="card-title">📈 Histórico Financeiro</h3>
+          <button class="btn btn-secondary" onclick="exportFinancialReport()">📥 Exportar Relatório</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Mês/Ano</th>
+                <th>Total Previsto</th>
+                <th>Total Recebido</th>
+                <th>Pendente</th>
+                <th>Taxa Adimplência</th>
+              </tr>
+            </thead>
+            <tbody id="financial-history-table">
+              <tr>
+                <td>Fev/2026</td>
+                <td>R$ 15.000,00</td>
+                <td>R$ 12.000,00</td>
+                <td>R$ 3.000,00</td>
+                <td><span class="status-badge active">80%</span></td>
+              </tr>
+              <tr>
+                <td>Jan/2026</td>
+                <td>R$ 15.000,00</td>
+                <td>R$ 14.250,00</td>
+                <td>R$ 750,00</td>
+                <td><span class="status-badge active">95%</span></td>
+              </tr>
+              <tr>
+                <td>Dez/2025</td>
+                <td>R$ 15.000,00</td>
+                <td>R$ 15.000,00</td>
+                <td>R$ 0,00</td>
+                <td><span class="status-badge active">100%</span></td>
               </tr>
             </tbody>
           </table>
@@ -1221,6 +1400,7 @@ Residencial Itacorubi</textarea>
         'apartments': 'Apartamentos',
         'tenants': 'Inquilinos',
         'contracts': 'Contratos',
+        'financeiro': 'Financeiro',
         'notifications': 'Notificações',
         'config': 'Configurações'
       };
@@ -1669,9 +1849,173 @@ Residencial Itacorubi</textarea>
       return Number(valor).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
     
+    // ========== FINANCIAL MODULE FUNCTIONS ==========
+    
+    function filterPayments(status, evt) {
+      // Update active filter button
+      document.querySelectorAll('#section-financeiro .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      if (evt && evt.target) {
+        evt.target.classList.add('active');
+      }
+      
+      // Filter payments table
+      const rows = document.querySelectorAll('#payments-table tr');
+      rows.forEach(row => {
+        const statusCell = row.querySelector('.status-badge');
+        if (!statusCell) return;
+        
+        const paymentStatus = statusCell.classList.contains('active') ? 'paid' :
+                             statusCell.classList.contains('pending') ? 'pending' :
+                             statusCell.classList.contains('danger') ? 'overdue' : 'unknown';
+        
+        if (status === 'all' || paymentStatus === status) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+    
+    function filterPaymentsByMonth() {
+      const month = document.getElementById('filter-payment-month').value;
+      const year = document.getElementById('filter-payment-year').value;
+      
+      // For demo purposes, just log the filter values
+      console.log('Filtering payments by:', month, year);
+      showAlert('info', `Filtrando pagamentos: ${month || 'Todos os meses'}/${year || 'Todos os anos'}`);
+    }
+    
+    function openPaymentModal() {
+      showAlert('info', 'Modal de registro de pagamento em desenvolvimento...');
+    }
+    
+    function confirmPayment(paymentId) {
+      if (confirm('Confirmar recebimento do pagamento?')) {
+        showAlert('success', `Pagamento #${paymentId} confirmado com sucesso!`);
+        // Update the row status using data-payment-id attribute
+        const row = document.querySelector(`#payments-table tr[data-payment-id="${paymentId}"]`);
+        if (row) {
+          const statusCell = row.querySelector('.status-badge');
+          if (statusCell) {
+            statusCell.className = 'status-badge active';
+            statusCell.textContent = 'Pago';
+          }
+          const dateCell = row.querySelectorAll('td')[6];
+          if (dateCell) {
+            const today = new Date();
+            dateCell.textContent = today.toLocaleDateString('pt-BR');
+          }
+        }
+        updateFinancialMetrics();
+      }
+    }
+    
+    function sendPaymentReminder(paymentId) {
+      if (confirm('Enviar lembrete de pagamento para o inquilino?')) {
+        showAlert('success', `Lembrete enviado para pagamento #${paymentId}!`);
+      }
+    }
+    
+    function sendOverdueNotice(paymentId) {
+      if (confirm('Enviar notificação de atraso para o inquilino?')) {
+        showAlert('warning', `Notificação de atraso enviada para pagamento #${paymentId}!`);
+      }
+    }
+    
+    function viewPaymentReceipt(paymentId) {
+      showAlert('info', `Visualizando recibo do pagamento #${paymentId}...`);
+    }
+    
+    function exportFinancialReport() {
+      showAlert('info', 'Gerando relatório financeiro para download...');
+    }
+    
+    function updateFinancialMetrics() {
+      let paid = 0, pending = 0, overdue = 0, total = 0;
+      
+      const rows = document.querySelectorAll('#payments-table tr');
+      rows.forEach(row => {
+        const statusCell = row.querySelector('.status-badge');
+        const valueCell = row.querySelectorAll('td')[4];
+        if (!statusCell || !valueCell) return;
+        
+        const value = parseFloat(valueCell.textContent.replace('R$', '').replace('.', '').replace(',', '.').trim()) || 0;
+        total += value;
+        
+        if (statusCell.classList.contains('active')) {
+          paid += value;
+        } else if (statusCell.classList.contains('pending')) {
+          pending += value;
+        } else if (statusCell.classList.contains('danger')) {
+          overdue += value;
+        }
+      });
+      
+      document.getElementById('metric-payments-paid').textContent = 'R$ ' + formatarMoeda(paid);
+      document.getElementById('metric-payments-pending').textContent = 'R$ ' + formatarMoeda(pending);
+      document.getElementById('metric-payments-overdue').textContent = 'R$ ' + formatarMoeda(overdue);
+      document.getElementById('metric-payments-total').textContent = 'R$ ' + formatarMoeda(total);
+    }
+    
+    function loadFinancialData() {
+      // Load financial data from backend
+      if (typeof google !== 'undefined' && google.script) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            if (data && data.payments) {
+              renderPayments(data.payments);
+            }
+            updateFinancialMetrics();
+          })
+          .withFailureHandler(function(error) {
+            console.error('Error loading financial data:', error);
+            updateFinancialMetrics();
+          })
+          .listarPagamentos();
+      } else {
+        // Demo mode - just update metrics with demo data
+        updateFinancialMetrics();
+      }
+    }
+    
+    function renderPayments(payments) {
+      const table = document.getElementById('payments-table');
+      let html = '';
+      
+      payments.forEach(payment => {
+        const statusClass = payment.status === 'Pago' ? 'active' : 
+                           payment.status === 'Pendente' ? 'pending' : 'danger';
+        const statusText = payment.status || 'Pendente';
+        
+        html += `
+          <tr data-payment-id="${payment.id}">
+            <td>${payment.apartamento || '-'}</td>
+            <td>${payment.inquilino || '-'}</td>
+            <td>${payment.referencia || '-'}</td>
+            <td>${payment.vencimento || '-'}</td>
+            <td>R$ ${formatarMoeda(payment.valor)}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>${payment.dataPagamento || '-'}</td>
+            <td>
+              ${payment.status === 'Pago' ? 
+                `<button class="btn btn-primary" onclick="viewPaymentReceipt(${payment.id})">🧾 Recibo</button>` :
+                `<button class="btn btn-success" onclick="confirmPayment(${payment.id})">✅ Confirmar</button>
+                 <button class="btn btn-secondary" onclick="sendPaymentReminder(${payment.id})">📧 Lembrar</button>`
+              }
+            </td>
+          </tr>
+        `;
+      });
+      
+      table.innerHTML = html;
+    }
+    
     // Load data on page load
     window.onload = function() {
       loadOverviewData();
+      updateFinancialMetrics();
     };
     
     // Close modal when clicking outside
