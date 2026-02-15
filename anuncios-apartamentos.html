@@ -654,8 +654,8 @@
     <p>Apartamentos mobiliados para locação em Florianópolis/SC</p>
     <div class="header-info">
       <span>📍 Servidão Joaquim Soares, 250 - Itacorubi</span>
-      <span>📞 (48) 99935-2627</span>
-      <span>✉️ eng.diogoj@gmail.com</span>
+      <span>📞 Contato via formulário</span>
+      <span>✉️ contato@base250.com.br</span>
     </div>
   </header>
 
@@ -763,7 +763,7 @@
   <!-- Footer -->
   <footer class="footer">
     <p>© 2026 BASE250 — Residencial Itacorubi</p>
-    <p>Administrado por <a href="mailto:eng.diogoj@gmail.com">Eng. Diogo J.</a></p>
+    <p>Administrado por <a href="mailto:contato@base250.com.br">Administração BASE250</a></p>
   </footer>
 
   <script>
@@ -1049,8 +1049,9 @@
         `${mensagem ? `💬 *Mensagem:* ${mensagem}%0A` : ''}` +
         `%0A_Enviado via BASE250_`;
       
-      // Abrir WhatsApp (número do proprietário)
-      const numeroProprietario = '5548999352627';
+      // Abrir WhatsApp (número configurável - substituir pelo número correto antes de implantar)
+      // NOTA: Configure o número do proprietário antes de usar em produção
+      const numeroProprietario = '5548000000000'; // Placeholder - configurar em produção
       window.open(`https://wa.me/${numeroProprietario}?text=${textoWhats}`, '_blank');
       
       mostrarToast('✅ Abrindo WhatsApp...');
@@ -1071,7 +1072,7 @@
         `💰 *Valor: ${valorFormatado}/mês*%0A%0A` +
         `✨ Características:%0A${apto.caracteristicas.map(c => `• ${c}`).join('%0A')}%0A%0A` +
         `🔗 Veja mais: ${link}%0A%0A` +
-        `📞 Contato: (48) 99935-2627`;
+        `📞 Contato: Acesse o formulário de interesse`;
       
       window.open(`https://wa.me/?text=${texto}`, '_blank');
     }

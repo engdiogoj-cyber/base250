@@ -275,14 +275,14 @@ This index helps you find the right document for your needs.
 If you find errors or need clarification in any document:
 1. Check INDEX.md (this file)
 2. Review related documents
-3. Contact: eng.diogoj@gmail.com
+3. Create GitHub Issue
 
 ### Technical Support
 For technical questions:
 1. Check README.md Troubleshooting
 2. Check MIGRATION_GUIDE.md Troubleshooting
 3. Create GitHub Issue
-4. Email: eng.diogoj@gmail.com
+4. Email: suporte@base250.com.br
 
 ---
 

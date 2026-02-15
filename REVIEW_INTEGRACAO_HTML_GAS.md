@@ -89,19 +89,19 @@ validarEmail() - Linhas 176, 1277
 **Severidade:** ALTA (Segurança/Privacidade)  
 **Impacto:** Risco de vazamento de dados, violação da LGPD/GDPR
 
-**Localização:** Linhas 20-34 (objeto CONFIG)
+**Location:** Lines 20-34 (CONFIG object) - EXAMPLES REDACTED
 ```javascript
 const CONFIG = {
   proprietario: {
-    nome: "JUCEMAR JOÃO DA SILVA",
-    cpf: "399.328.349-04",
-    telefone: "(48) 99935-2627",
-    email: "eng.diogoj@gmail.com",
-    endereco: "Rua Deputado Otacílio Costa, 40, Ap. 101",
+    nome: "[REDACTED]",                    // Was exposed
+    cpf: "XXX.XXX.XXX-XX",                 // Was exposed
+    telefone: "(XX) XXXXX-XXXX",           // Was exposed
+    email: "user@example.com",             // Was exposed
+    endereco: "[REDACTED]",                // Was exposed
     cidade: "Florianópolis",
     estado: "SC",
-    cep: "88030-480",
-    pix: "48999352627"
+    cep: "XXXXX-XXX",                      // Was exposed
+    pix: "XXXXXXXXXXX"                     // Was exposed
   }
 }
 ```
@@ -130,10 +130,6 @@ const CONFIG = {
 **Severidade:** MÉDIA-ALTA  
 **Impacto:** Carga de manutenção, implantação inflexível
 
-**Localizações:**
-- Linha 20-21: `eng.diogoj@gmail.com`
-- Linha 1134: Notificações de e-mail hardcoded
-- Linha 1678: `floripamoso@gmail.com` no tratamento de erros
 
 **Problemas:**
 - Alterar destinatários de e-mail requer modificação de código

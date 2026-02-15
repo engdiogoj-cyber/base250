@@ -116,13 +116,7 @@ Adicionada seção V2 com:
 
 ### Problemas de Segurança V1 ❌
 
-```javascript
-// EXPOSTO no código fonte:
-cpf: '399.328.349-04'           // ❌ CPF pessoal
-telefone: '(48) 99935-2627'     // ❌ Número de telefone
-pix: '48999352627'              // ❌ Dados financeiros
-nome: 'JUCEMAR JOÃO DA SILVA'   // ❌ Nome completo
-```
+
 
 **Riscos:**
 - Violações da LGPD/GDPR
@@ -475,9 +469,9 @@ A migração é bem-sucedida quando:
 
 ### Contato
 
-- **Técnico:** eng.diogoj@gmail.com
-- **Repositório:** github.com/engdiogoj-cyber/base250
-- **Problemas:** GitHub Issues
+- **Technical:** suporte@base250.com.br
+- **Repository:** github.com/engdiogoj-cyber/base250
+- **Issues:** GitHub Issues
 
 ---
 

@@ -66,7 +66,7 @@ base250/
 2. **🔴 PII Exposto**
    ```javascript
    // V1 - EXPOSTO NO CÓDIGO ❌
-   cpf: '399.328.349-04'
+   cpf: '123.456.789-00'  // EXEMPLO - NÃO USE DADOS REAIS
    
    // V2 - SEGURO ✅
    cpf: getScriptProperty('PROPRIETARIO_CPF')
@@ -278,7 +278,7 @@ R: Nas Script Properties, não no código.
 - MIGRATION_GUIDE.md para passo a passo
 
 ### Suporte
-- Email: eng.diogoj@gmail.com
+- Email: suporte@base250.com.br
 - GitHub Issues: Página de issues do repositório
 - Revise documentos para troubleshooting
 

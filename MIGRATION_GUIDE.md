@@ -543,10 +543,10 @@ Preencha a coluna "V2 Real" durante os testes.
 - IMPLEMENTATION_NOTES.md - Visão geral do sistema
 - Este arquivo (MIGRATION_GUIDE.md) - Instruções de migração
 
-**Contato:**
-- Suporte Técnico: eng.diogoj@gmail.com
-- Problemas do Sistema: Criar issue no repositório
-- Emergência: [Detalhes de contato]
+**Contact:**
+- Technical Support: suporte@base250.com.br
+- System Issues: Create issue in repository
+- Emergency: Create urgent GitHub issue
 
 ### Perguntas Frequentes
 
